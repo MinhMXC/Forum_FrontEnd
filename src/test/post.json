@@ -1,0 +1,87 @@
+{
+  "status": "success",
+  "data": {
+    "title": "bruh",
+    "body": "bruh",
+    "like_count": 0,
+    "dislike_count": 0,
+    "image": null,
+    "visited": 1,
+    "created_at": 1702836867,
+    "updated_at": 1702836867,
+    "user": {
+      "username": "minhmxc1",
+      "image": null
+    },
+    "comments": [
+      {
+        "body": "bruh",
+        "like_count": 0,
+        "dislike_count": 0,
+        "created_at": 1702836867,
+        "updated_at": 1702836867,
+        "user": {
+          "username": "minhmxc1",
+          "image": null
+        },
+        "comments": [
+          {
+            "body": "bruh1",
+            "like_count": 0,
+            "dislike_count": 0,
+            "created_at": 1702836867,
+            "updated_at": 1702836867,
+            "user": {
+              "username": "minhmxc1",
+              "image": null
+            },
+            "comments": [
+              {
+                "body": "bruh2",
+                "like_count": 0,
+                "dislike_count": 0,
+                "created_at": 1702836867,
+                "updated_at": 1702836867,
+                "user": {
+                  "username": "minhmxc1",
+                  "image": null
+                },
+                "comments": []
+              }
+            ]
+          },
+          {
+            "body": "bruh1",
+            "like_count": 0,
+            "dislike_count": 0,
+            "created_at": 1702836867,
+            "updated_at": 1702836867,
+            "user": {
+              "username": "minhmxc1",
+              "image": null
+            },
+            "comments": []
+          }
+        ]
+      },
+      {
+        "body": "bruh",
+        "like_count": 0,
+        "dislike_count": 0,
+        "created_at": 1702836867,
+        "updated_at": 1702836867,
+        "user": {
+          "username": "minhmxc1",
+          "image": null
+        },
+        "comments": []
+      }
+    ],
+    "tags": [
+      {
+        "tag_text": "bruh",
+        "colour": "bruh"
+      }
+    ]
+  }
+}
