@@ -27,7 +27,7 @@ function ImageUsernameAge(user: User) {
 function Bio(user: User) {
     return (
         <div>
-            <p id="bio-bio-text">Bio</p>
+            <p className="section-title-text">Bio</p>
             <p id="bio-body-text">{parseString(user.bio)}</p>
         </div>
     );
@@ -36,15 +36,15 @@ function Bio(user: User) {
 export default function UserSection(user: User) {
     return (
         <div>
-            <div className="main-col-container">
+            <div className="section-container">
                 <ImageUsernameAge {...user} />
             </div>
-            <div className="main-col-container" style={{ paddingLeft: "16px" }}>
+            <div className="section-container" style={{ paddingLeft: "16px" }}>
                 <Bio {...user} />
             </div>
             <Accordion defaultExpanded={true} disableGutters={true} sx={{ mt: "15px", borderRadius: "5px" }}>
                 <AccordionSummary>
-                    <p className="accordion-summary-user-text">Posts</p>
+                    <p className="section-title-text">Posts</p>
                 </AccordionSummary>
                 <AccordionDetails>
                     {user.posts.map(post => <div style={{ marginBottom: "4%" }}><PostSection post={post} /></div>)}
@@ -52,10 +52,10 @@ export default function UserSection(user: User) {
             </Accordion>
             <Accordion defaultExpanded={true} disableGutters={true} sx={{ mt: "15px", borderRadius: "5px" }}>
                 <AccordionSummary>
-                    <p className="accordion-summary-user-text">Comments</p>
+                    <p className="section-title-text">Comments</p>
                 </AccordionSummary>
                 <AccordionDetails>
-                    {user.comments.map(comment => <div style={{ marginBottom: "2%" }}><CommentE {...comment} /></div>)}
+                    {user.comments.map(comment => <div style={{ marginBottom: "2%" }}><CommentE comment={comment} /></div>)}
                     </AccordionDetails>
             </Accordion>
         </div>

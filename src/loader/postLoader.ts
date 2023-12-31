@@ -1,8 +1,9 @@
-export default async function postLoader(params: any) {
-    const url = "http://127.0.0.1:5000/posts/" + params.params.id
-    const res = await fetch(url)
-    if (res.status === 404)
-        throw new Response((await res.json() as any).message, { status: 404 })
+import fetchWithHeader from "../helper/fetchWithHeader";
 
-    return await res.json()
+export default async function postLoader({params}: any) {
+    const res = await fetchWithHeader(`http://127.0.0.1:5000/posts/${params.id}`, "GET")
+    if (res.status === "error")
+        throw new Response(res.message, { status: 404 })
+
+    return await res
 }

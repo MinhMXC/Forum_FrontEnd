@@ -3,10 +3,14 @@ import SimpleUser from "./SimpleUser";
 export default interface Comment {
     id: number,
     body: string,
-    like_count: number,
-    dislike_count: number,
+    comments_likes_count: number,
+    comments_dislikes_count: number,
+    deleted: boolean,
+    userState: number,
+    owner: boolean,
     created_at: number,
     updated_at: number,
+    post_id: number,
     user: SimpleUser,
-    comments: Comment[]
+    comments: Comment[],
 }

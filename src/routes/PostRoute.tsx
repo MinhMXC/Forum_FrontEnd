@@ -1,18 +1,19 @@
 import PostSection from "../components/PostSection";
 import React from "react";
 import CommentSection from "../components/CommentSection";
-import {useLoaderData} from "react-router-dom";
+import {useLoaderData, useNavigate} from "react-router-dom";
 
 export default function PostRoute(prop: any) {
-    const post = (useLoaderData() as any).data
+    const post: any = (useLoaderData() as any).data
+    const navigate = useNavigate()
     return (
-        <div>
-            <div className="main-col-container" style={{ width: prop.width }}>
-                <PostSection post={post} link={false} />
+        <>
+            <div className="section-container" style={{width: prop.width}}>
+                <PostSection post={post} link={false} navigate={navigate} />
             </div>
-            <div className="main-col-container" style={{ width: prop.width }}>
-                <CommentSection comments={post.comments}/>
+            <div className="section-container" style={{ width: prop.width }}>
+                <CommentSection comments={post.comments} post_id={post.id} navigate={navigate}/>
             </div>
-        </div>
+        </>
     );
 }
