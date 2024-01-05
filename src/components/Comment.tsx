@@ -21,6 +21,7 @@ import ErrorText from "./ErrorText";
 import fetchWithHeader from "../helper/fetchWithHeader";
 import parseError from "../helper/parseError";
 import SimpleUser from "../interfaces/SimpleUser";
+import APP_CONSTANTS from "../helper/ApplicationConstants";
 
 const secondaryTextColour= "#8a8a8a"
 
@@ -53,12 +54,20 @@ function UsernameDate(prop: any) {
     const comment = prop.comment as Comment
     const time = comment.updated_at === comment.created_at
                  ? convertEpochToTimeAgo(+comment.created_at)
-                 : convertEpochToTimeAgo(+comment.created_at) + " (edited: " + convertEpochToTimeAgo(+comment.updated_at) + ")"
+                 : convertEpochToTimeAgo(+comment.created_at)
+                    + " (edited: " + convertEpochToTimeAgo(+comment.updated_at) + ")"
     return (
         <Grid container spacing={1} alignItems="center" sx={{ pt: 0.5 }}>
             <Grid item xs="auto">
                 <Typography variant="body1" sx={{ fontWeight: 500 }}>{comment.user.username}</Typography>
             </Grid>
+            {
+                prop.post_user_id === comment.user.id
+                    ?   <Grid item xs="auto">
+                            <Typography color="secondary" sx={{ fontWeight: 600, ml: -0.5 }}>OP</Typography>
+                        </Grid>
+                    : undefined
+            }
             <Grid item xs="auto">
                 <Typography variant="body2" color={secondaryTextColour}>{time}</Typography>
             </Grid>
@@ -81,7 +90,7 @@ function OwnerOptions(prop: any) {
     }
 
     async function deleteComment() {
-        await fetchWithHeader(`http://localhost:5000/comments/${comment.id}`, "DELETE")
+        await fetchWithHeader(`/comments/${comment.id}`, "DELETE")
         navigate(0)
     }
 
@@ -134,14 +143,14 @@ function CommentBottomControls(prop: any) {
 
         // Undo the like
         if (userState === 1) {
-            fetchWithHeader(`http://localhost:5000/comments/${comment.id}/like`, "POST")
+            fetchWithHeader(`/comments/${comment.id}/like`, "POST")
             setLike(false)
             setUserState(0)
             setLikeCount(like_count - 1)
             return
         }
 
-        fetchWithHeader(`http://localhost:5000/comments/${comment.id}/like`, "POST")
+        fetchWithHeader(`/comments/${comment.id}/like`, "POST")
         if (userState === -1)
             setDislikeCount(dislike_count - 1)
         setLikeCount(like_count + 1)
@@ -153,14 +162,17 @@ function CommentBottomControls(prop: any) {
             return
 
         if (userState === -1) {
-            fetchWithHeader(`http://localhost:5000/comments/${comment.id}/dislike`, "POST")
+            fetchWithHeader(`/comments/${comment.id}/dislike`, "POST")
             setDislike(false)
             setUserState(0)
             setDislikeCount(dislike_count - 1)
             return
         }
 
-        fetchWithHeader(`http://localhost:5000/comments/${comment.id}/dislike`, "POST")
+        fetchWithHeader(
+
+
+            `/comments/${comment.id}/dislike`, "POST")
         if (userState === 1)
             setLikeCount(like_count - 1)
         setDislikeCount(dislike_count + 1)
@@ -200,12 +212,15 @@ function CommentBottomControls(prop: any) {
 
 function AvatarColumn(prop: any) {
     const user = prop.user as SimpleUser
+    const avatarSize = APP_CONSTANTS.AVATAR_SMALL
     return (
         <div className="avatar-column-div">
-            <a href={"http://localhost:3000/users/" + user.id}
+            <a href={"" +
+                "" +
+                "://localhost:3000/users/" + user.id}
                style={{textDecoration: "none", color: "inherit"}}>
-                <Avatar alt={user.id === -1 ? "" : user.username} src={parseString(user.image)} sx={{height: 32, width: 32}}>
-                    {user.id === -1 ? undefined : <Avatar alt="default" src={default_avatar} sx={{height: 32, width: 32}}/>}
+                <Avatar alt={user.id === -1 ? "" : user.username} src={parseString(user.image)} sx={{height: avatarSize, width: avatarSize}}>
+                    {user.id === -1 ? undefined : <Avatar alt="default" src={default_avatar} sx={{height: avatarSize, width: avatarSize}}/>}
                 </Avatar>
             </a>
             <div className="comment-nest-div"/>
@@ -228,7 +243,7 @@ function ReplyForm(prop: any) {
 function sendReplyComment(comment: Comment, navigate: NavigateFunction, setError: Function) {
     return async () => {
         const text = (document.getElementById(`reply_comment_${comment.id}`) as HTMLInputElement).value
-        const res = await fetchWithHeader("http://127.0.0.1:5000/comments", "POST",
+        const res = await fetchWithHeader("/comments", "POST",
             ({body: text, comment_id: comment.id, post_id: comment.post_id} as any))
         if (res.status === "error") {
             setError(parseError(res.message))
@@ -255,7 +270,7 @@ export default function CommentE(prop: any) {
 
     async function patchOnClick() {
         const newCommentBody = (document.getElementById(`patch-comment-${comment.id}`) as HTMLInputElement).value
-        const res = await fetchWithHeader(`http://localhost:5000/comments/${comment.id}`, "PATCH", {body: newCommentBody} as any)
+        const res = await fetchWithHeader(`/comments/${comment.id}`, "PATCH", {body: newCommentBody} as any)
         if (res.status === "error") {
             setPatchError(parseError(res.message))
             return
@@ -284,13 +299,17 @@ export default function CommentE(prop: any) {
                 <ThemeProvider theme={themeAccordion}>
                     <Accordion defaultExpanded={true} disableGutters={true} sx={{ boxShadow: "none"}}>
                         <AccordionSummary>
-                            <UsernameDate comment={comment} />
+                            <UsernameDate comment={comment} post_user_id={prop.post_user_id} />
                         </AccordionSummary>
                         <AccordionDetails>
-                            {isPatching ? <PatchForm /> : <Typography>{body}</Typography>}
+                            {isPatching ? <PatchForm /> : <Typography sx={{ whiteSpace: "pre-line" }}>{body}</Typography>}
                             <CommentBottomControls comment={comment} replyOnClick={replyOnClick} navigate={navigate} setPatch={setIsPatching} />
                             {isReplying ? <ReplyForm comment={comment} error={replyError} onClick={sendReplyComment(comment, navigate, setReplyError)} /> : undefined}
-                            { comment.comments?.map(comment => <Grid item xs="auto"><CommentE comment={comment} navigate={navigate} /></Grid>) }
+                            { comment.comments?.map(comment =>
+                                <Grid item xs="auto">
+                                    <CommentE comment={comment} post_user_id={prop.post_user_id} navigate={navigate} />
+                                </Grid>
+                            ) }
                         </AccordionDetails>
                     </Accordion>
                 </ThemeProvider>

@@ -10,7 +10,6 @@ export default interface Post {
     image: string | null,
     visited: boolean,
     comments_count: number,
-    deleted: boolean,
     userState: number,
     owner: boolean,
     created_at: number,

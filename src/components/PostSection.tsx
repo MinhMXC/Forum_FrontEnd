@@ -14,6 +14,8 @@ import Tag from "../interfaces/Tag";
 import {useEffect, useState} from "react";
 import {NavigateFunction} from "react-router-dom";
 import fetchWithHeader from "../helper/fetchWithHeader";
+import APP_CONSTANTS from "../helper/ApplicationConstants";
+import textChipColour from "../helper/textChipColour";
 
 const secondaryTextColour= "#8a8a8a"
 
@@ -21,13 +23,15 @@ function ImageUsernameDate(post: Post) {
     const time = post.updated_at === post.created_at
         ? convertEpochToTimeAgo(+post.created_at)
         : convertEpochToTimeAgo(+post.created_at) + " (edited: " + convertEpochToTimeAgo(+post.updated_at) + ")"
+    const avatarSize = APP_CONSTANTS.AVATAR_MEDIUM
 
     return (
         <Grid container alignItems="center" spacing={1}>
             <Grid item xs="auto">
-                <a href={"http://localhost:3000/users/" + post.user.id}
+                <a href={APP_CONSTANTS.FRONTEND_URL + "/users/" + post.user.id}
                    style={{textDecoration: "none", color: "inherit"}}>
-                    <Avatar alt={post.user.id === -1 ? "" : post.user.username} src={parseString(post.user.image)} sx={{height: 40, width: 40}}>
+                    <Avatar alt={post.user.id === -1 ? "" : post.user.username} src={parseString(post.user.image)}
+                            sx={{height: avatarSize, width: avatarSize}}>
                         {post.user.id === -1 ? undefined : <Avatar alt="default" src={default_avatar}/>}
                     </Avatar>
                 </a>
@@ -36,7 +40,7 @@ function ImageUsernameDate(post: Post) {
                 <Typography variant="h6">{post.user.username}</Typography>
             </Grid>
             <Grid item xs="auto">
-                <Typography variant="body1" color={secondaryTextColour}>{time}</Typography>
+                <Typography variant="body1" color={secondaryTextColour} sx={{ mt: 0.25 }}>{time}</Typography>
             </Grid>
         </Grid>
     );
@@ -45,14 +49,15 @@ function ImageUsernameDate(post: Post) {
 function TagElement(prop: any) {
     const tag = prop.tag as Tag
     return (
-        <Chip label={tag.tag_text} variant="filled" size="small" sx={{ bgcolor: tag.colour }}></Chip>
+        <Chip label={tag.tag_text} variant="filled" size="small"
+              sx={{ bgcolor: tag.colour, color: textChipColour(tag.colour) }}></Chip>
     );
 }
 
 function PostTags(prop: any) {
     const tags = prop.tags as Tag[]
     return (
-        <Grid container sx={{ mt: 1, mb: 0.4 }}>
+        <Grid container sx={{ mt: 1, mb: 0.4 }} spacing={0.5}>
             {tags.map(tag => <Grid item xs="auto"><TagElement tag={tag}/></Grid>)}
         </Grid>
     );
@@ -62,7 +67,8 @@ function PostBody(post: Post) {
     return (
         <>
             <Typography variant="h5" fontWeight="450">{post.title}</Typography>
-            <Typography variant="body1" sx={{ mt: 1 }}>{post.body}</Typography>
+            {post.image !== null ? <img src={parseString(post.image)} className="post-image" alt={`post-${post.id}-image`} /> : undefined }
+            <Typography variant="body1" sx={{ mt: 1, whiteSpace: "pre-line" }}>{post.body}</Typography>
         </>
     );
 }
@@ -82,7 +88,7 @@ function OwnerOptions(prop: any) {
     }
 
     async function deletePost() {
-        await fetchWithHeader(`http://localhost:5000/posts/${post.id}`, "DELETE")
+        await fetchWithHeader(`/posts/${post.id}`, "DELETE")
         navigate(0)
     }
 
@@ -133,14 +139,14 @@ function PostBottomControls(prop: any) {
 
         // Undo the like
         if (userState === 1) {
-            fetchWithHeader(`http://localhost:5000/posts/${post.id}/like`, "POST")
+            fetchWithHeader(`/posts/${post.id}/like`, "POST")
             setLike(false)
             setUserState(0)
             setLikeCount(like_count - 1)
             return
         }
 
-        fetchWithHeader(`http://localhost:5000/posts/${post.id}/like`, "POST")
+        fetchWithHeader(`/posts/${post.id}/like`, "POST")
         if (userState === -1)
             setDislikeCount(dislike_count - 1)
         setLikeCount(like_count + 1)
@@ -152,14 +158,14 @@ function PostBottomControls(prop: any) {
             return
 
         if (userState === -1) {
-            fetchWithHeader(`http://localhost:5000/posts/${post.id}/dislike`, "POST")
+            fetchWithHeader(`/posts/${post.id}/dislike`, "POST")
             setDislike(false)
             setUserState(0)
             setDislikeCount(dislike_count - 1)
             return
         }
 
-        fetchWithHeader(`http://localhost:5000/posts/${post.id}/dislike`, "POST")
+        fetchWithHeader(`/posts/${post.id}/dislike`, "POST")
         if (userState === 1)
             setLikeCount(like_count - 1)
         setDislikeCount(dislike_count + 1)
@@ -205,7 +211,7 @@ function PostSection(prop: any) {
         <div style={{ opacity: post.visited ? 0.5 : 1 }}>
             <ImageUsernameDate {...post} />
             <PostTags tags={post.tags}/>
-            <a href={ "http://localhost:3000/posts/" + post.id }
+            <a href={APP_CONSTANTS.FRONTEND_URL + "/posts/" + post.id}
                style={{ textDecoration: "none", color: "inherit", pointerEvents: pointerEvent }}>
                 <PostBody {...post} />
             </a>

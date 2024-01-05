@@ -1,4 +1,5 @@
 import Cookies from "js-cookie";
+import APP_CONSTANTS from "./ApplicationConstants";
 
 const access_token = "access-token"
 const token_type = "token-type"
@@ -8,7 +9,7 @@ const uid = "uid"
 
 async function fetchWithHeader(url: string, method: string, data: (JSON | undefined) = undefined) {
     try {
-        const response = await fetch(url, {
+        const response = await fetch(APP_CONSTANTS.BACKEND_URL + url, {
             method: method,
             headers: {
                 "content-type": "application/json",

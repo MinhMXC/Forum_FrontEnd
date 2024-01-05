@@ -1,4 +1,6 @@
-html, #root { background-color: #42a5f5 }
+html, #root {
+    background-color: #42a5f5;
+}
 
 input[type="search"]::-webkit-search-cancel-button {
     -webkit-appearance: none;
@@ -21,32 +23,66 @@ header {
 }
 
 #site-name {
-    font-weight: 700;
-    font-size: 230%;
-    color: #9c27b0;
-    text-decoration: none;
+    display: inline;
 }
 
 .section-container {
     background-color: white;
+    width: 820px;
     padding: 20px;
     border-radius: 5px;
     margin-top: 15px;
 }
 
+@media screen and (max-width: 875px) {
+    .section-container {
+        width: 96%;
+        padding: 10px;
+        margin-left: 2%;
+        margin-right: 2%;
+        box-sizing: border-box;
+    }
+
+    #site-name {
+        display: none;
+    }
+
+    #search-bar-container {
+        margin-left: 1.5%;
+    }
+
+    #large-screen-header {
+        display: none
+    }
+}
+
+@media screen and (min-width: 875px) {
+    #small-screen-header {
+        display: none;
+    }
+}
+
+/*Post*/
+
 #post-like-dislike-separating-div {
     background-color: #c8c8c8;
-    width: 2px;
+    width: 0.15rem;
     border-radius: 2px;
     margin-left: 14px;
     margin-right: 9px;
+}
+
+.post-image {
+    width: 100%;
+    height: 100%;
+    margin-top: 1%;
 }
 
 /*Comment*/
 
 #comment-like-dislike-separating-div {
     background-color: #c8c8c8;
-    width: 2px;
+    width: 0.15rem;
     border-radius: 2px;
     margin-left: 12px;
     margin-right: 6px;
@@ -56,9 +92,9 @@ header {
     display: flex;
     flex-grow: 1;
     background-color: #c8c8c8;
-    width: 2px;
+    width: 0.12rem;
     border-radius: 2px;
-    margin: 35% 0 40% 49%;
+    margin: 35% 0 40% 45%;
 }
 
 .avatar-column-div {
@@ -74,6 +110,17 @@ header {
     width: 100%;
     height: 100%;
     color: white;
+}
+
+.sortby-container {
+    color: #9c9c9c;
+    margin-bottom: 1.5%;
+}
+
+@media screen and (max-width: 875px) {
+    .sortby-container {
+        margin-bottom: 3%;
+    }
 }
 
 /*Header*/
@@ -103,6 +150,13 @@ header {
     border-top: none;
 }
 
+#site-name {
+    font-weight: 700;
+    font-size: 230%;
+    color: #9c27b0;
+    text-decoration: none;
+}
+
 /*UserSection*/
 
 .section-title-text {
@@ -121,12 +175,6 @@ header {
     font-size: 150%;
 }
 
-#bio-bio-text {
-    margin: 0;
-    font-weight: 500;
-    font-size: 180%;
-}
-
 /*Auth*/
 .login-signup-div {
     display: flex;
@@ -137,4 +185,18 @@ header {
 
 .login-signup-button {
     padding: 10%;
+}
+
+/*Account*/
+
+#warning-body-paragraph {
+    margin-top: 2%;
+}
+
+/*MakeUpdateTextField*/
+
+.main-textfields {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }

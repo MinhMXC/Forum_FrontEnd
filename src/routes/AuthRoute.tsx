@@ -5,23 +5,29 @@ import {NavigateFunction, useNavigate, useSearchParams} from "react-router-dom";
 import validateEmail from "../helper/validateEmail";
 import ErrorText from "../components/ErrorText";
 import parseError from "../helper/parseError";
+import APP_CONSTANTS from "../helper/ApplicationConstants";
+import handleEnterKey from "../helper/handleEnterKey";
 
-function SignUp() {
+function SignUp(prop: any) {
+    const handleEnterKey = prop.handleEnterKey
+
     return (
         <div className="login-signup-div">
             <TextField variant="outlined" label="Email" id="email" />
             <TextField variant="outlined" label="Username" id="username"  />
             <TextField variant="outlined" type="password" label="Password" id="password" />
-            <TextField variant="outlined" type="password" label="Confirm Password" id="password_confirm" />
+            <TextField variant="outlined" type="password" label="Confirm Password" id="password_confirm" onKeyDown={handleEnterKey} />
         </div>
     );
 }
 
-function Login() {
+function Login(prop: any) {
+    const handleEnterKey = prop.handleEnterKey
+
     return (
       <div className="login-signup-div">
           <TextField variant="outlined" label="Email or Username" id="identifier" />
-          <TextField variant="outlined" type="password" label="Password" id="password" />
+          <TextField variant="outlined" type="password" label="Password" id="password" onKeyDown={handleEnterKey} />
       </div>
     );
 }
@@ -60,9 +66,9 @@ function loginOnClick(navigate: NavigateFunction, setError: Function) {
         const password = (document.getElementById("password")! as HTMLInputElement).value
         const identifier_type = validateEmail(identifier) ? "email" : "username"
         const res = await
-            fetch(`http://localhost:5000/auth/sign_in`,
+            fetch(APP_CONSTANTS.BACKEND_URL + `/auth/sign_in`,
                     {method: "POST", headers: {"content-type": "application/json"},
-                        body: `{"${identifier_type}": "${identifier}", "password": ${password}}`})
+                        body: `{"${identifier_type}": "${identifier}", "password": "${password}"}`})
         if (res.status !== 200) {
             const errorJson = await res.json()
             setError(parseError(errorJson.message))
@@ -83,11 +89,11 @@ function signupOnClick(navigate: NavigateFunction, setError: Function) {
         const confirm = (document.getElementById("password_confirm")! as HTMLInputElement).value
 
         const res = await
-            fetch(`http://localhost:5000/auth/?email=${email}&username=${username}&password=${password}&password_confirmation=${confirm}`,
+            fetch(APP_CONSTANTS.BACKEND_URL + `/auth/?email=${email}&username=${username}&password=${password}&password_confirmation=${confirm}`,
             {method: "POST"})
         if (res.status !== 200) {
             const errorJson = await res.json()
-            setError(parseError(errorJson.message))
+            setError(parseError(errorJson.message.full_messages))
             return
         }
 
@@ -123,14 +129,14 @@ export default function AuthRoute(prop: any) {
                 </Tabs>
             </Box>
             <TabPanel index={0} value={value}>
-                <Login/>
-                <ErrorText error={error} marginTop={3} marginBottom={3} />
+                <Login handleEnterKey={handleEnterKey(loginOnClick(navigate, setError))} />
+                <ErrorText error={error} marginTop={2} marginBottom={2} />
                 <Button onClick={loginOnClick(navigate, setError)} variant="contained" disableElevation
                         sx={buttonStyle}>Login</Button>
             </TabPanel>
             <TabPanel index={1} value={value}>
-                <SignUp/>
-                <ErrorText error={error} marginTop={3} marginBottom={3} />
+                <SignUp handleEnterKey={handleEnterKey(signupOnClick(navigate, setError))} />
+                <ErrorText error={error} marginTop={2} marginBottom={2} />
                 <Button onClick={signupOnClick(navigate, setError)} variant="contained" disableElevation
                         sx={buttonStyle}>Sign Up</Button>
             </TabPanel>

@@ -6,7 +6,6 @@ export default interface User {
     username: string,
     image: string,
     bio: string,
-    deleted: boolean,
     created_at: number,
     updated_at: number,
     posts: Post[],

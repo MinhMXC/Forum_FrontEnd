@@ -12,7 +12,7 @@ export default function PostRoute(prop: any) {
                 <PostSection post={post} link={false} navigate={navigate} />
             </div>
             <div className="section-container" style={{ width: prop.width }}>
-                <CommentSection comments={post.comments} post_id={post.id} navigate={navigate}/>
+                <CommentSection comments={post.comments} post_id={post.id} post_user_id={post.user.id} navigate={navigate}/>
             </div>
         </>
     );

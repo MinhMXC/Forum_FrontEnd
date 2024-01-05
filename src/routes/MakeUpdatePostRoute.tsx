@@ -1,17 +1,22 @@
 import {Autocomplete, Button, Chip, TextField} from "@mui/material";
 import React, {useEffect, useState} from "react";
-import {NavigateFunction, useLoaderData, useNavigate, useSearchParams} from "react-router-dom";
+import {useLoaderData, useNavigate, useSearchParams} from "react-router-dom";
 import ErrorText from "../components/ErrorText";
 import Tag from "../interfaces/Tag";
 import fetchWithHeader from "../helper/fetchWithHeader";
 import Post from "../interfaces/Post";
+import parseError from "../helper/parseError";
+import textChipColour from "../helper/textChipColour";
 
 
 function TagSelection(prop: any) {
     const tags = (useLoaderData() as any).data as Tag[]
     const updateModeTags = prop.tags as Tag[]
+
     useEffect(() => {
-        prop.setSelected(updateModeTags)
+        if (updateModeTags !== undefined) {
+            prop.setSelected(updateModeTags)
+        }
     }, []);
 
     return (
@@ -26,32 +31,34 @@ function TagSelection(prop: any) {
             )}
             renderTags={(value, getTagProps) =>
                 value.map((tag: Tag, index: number) =>
-                    (<Chip variant="filled" label={tag.tag_text} {...getTagProps({ index })} />))
+                    (<Chip variant="filled" label={tag.tag_text}
+                           sx={{ bgcolor: tag.colour, color: textChipColour(tag.colour) }} {...getTagProps({ index })} />))
             }
-            sx={{ mb: 1 }}
         />
     );
 }
 
 function MainTextFields(prop: any) {
     return (
-        <>
-            <TextField id="create_post_title" label="Title" sx={{mb: 1, width: "100%"}} multiline={true}/>
+        <div className="main-textfields">
+            <TextField id="create_post_title" label="Title" multiline={true}/>
             <TagSelection setSelected={prop.setSelected}/>
-            <TextField id="create_post_body" label="Body" sx={{mb: 1, width: "100%"}} multiline={true}/>
-        </>
+            <TextField id="create_post_body" label="Body" multiline={true}/>
+            <TextField id="create_post_image" label="Image's URL" multiline={true}/>
+        </div>
     )
 }
 
 function MainTextFieldsUpdate(prop: any) {
-    const post = prop.post
+    const post = prop.post as Post
 
     return (
-        <>
+        <div className="main-textfields">
             <TextField id="create_post_title" label="Title" defaultValue={post.title} sx={{mb: 1, width: "100%"}} multiline={true}/>
             <TagSelection setSelected={prop.setSelected} tags={post.tags}/>
             <TextField id="create_post_body" label="Body" defaultValue={post.body} sx={{mb: 1, width: "100%"}} multiline={true}/>
-        </>
+            <TextField id="create_post_image" label="Image's URL" defaultValue={post.image} multiline={true}/>
+        </div>
     )
 }
 
@@ -64,32 +71,11 @@ function Guidelines() {
     );
 }
 
-function postOnClick(navigate: NavigateFunction, setError: Function, selectedTags: Tag[], mode: string, post_id: string) {
-    return async () => {
-        const title = (document.getElementById("create_post_title") as HTMLInputElement).value
-        const body = (document.getElementById("create_post_body") as HTMLInputElement).value
-        const selectedTagsId = selectedTags.map(tag => tag.id)
-        const url = mode === "PATCH" ? `http://127.0.0.1:5000/posts/${post_id}` : "http://127.0.0.1:5000/posts"
-        const res = await fetchWithHeader(url, mode,
-            ({post: {title: title, body: body, tag_ids: selectedTagsId} } as any))
-        if (res.status === "error") {
-            const errorMessage = mode === "POST"
-                                 ? res.message.reduce((x: string, y: string) => x === "" ? y : y + "\n" + x, "")
-                                 : res.message
-            setError(errorMessage)
-            return
-        }
-
-        setError("Success")
-        navigate(`/posts/${res.data.id}`)
-    }
-}
-
 export default function MakeUpdatePostRoute(prop: any) {
     const navigate = useNavigate()
     const [searchParams] = useSearchParams()
-    let [error, setError] = useState<string>("")
-    let [selectedTags, setSelectedTags] = useState<Tag[]>([])
+    const [error, setError] = useState<string>("")
+    const [selectedTags, setSelectedTags] = useState<Tag[]>([])
 
     const operation = searchParams.get("mode") === "update" ? "PATCH" : "POST"
     let post_id = searchParams.get("post_id")
@@ -100,9 +86,28 @@ export default function MakeUpdatePostRoute(prop: any) {
     useEffect(() => {
         if (post_id === "-1")
             return
-        fetchWithHeader(`http://127.0.0.1:5000/posts/${post_id}`, "GET")
+        fetchWithHeader(`/posts/${post_id}`, "GET")
             .then(res => setPost(res.data as Post))
     }, []);
+
+    async function postOnClick() {
+        const title = (document.getElementById("create_post_title") as HTMLInputElement).value
+        const body = (document.getElementById("create_post_body") as HTMLInputElement).value
+        let image: string | null = (document.getElementById("create_post_image") as HTMLInputElement).value
+        if (image === "")
+            image = null
+        const selectedTagsId = selectedTags.map(tag => tag.id)
+        const url = operation === "PATCH" ? `/posts/${post_id}` : "/posts"
+        const res = await fetchWithHeader(url, operation,
+            ({post: {title: title, body: body, tag_ids: selectedTagsId, image: image}} as any))
+        if (res.status === "error") {
+            setError(parseError(res.message))
+            return
+        }
+
+        setError("Success")
+        navigate(`/posts/${res.data.id}`)
+    }
 
     return (
         <>
@@ -117,7 +122,7 @@ export default function MakeUpdatePostRoute(prop: any) {
                 }
                 <ErrorText error={error} marginTop={0.25} marginBottom={0.25}/>
                 <Button variant="contained"
-                        onClick={postOnClick(navigate, setError, selectedTags, operation, post_id)}
+                        onClick={postOnClick}
                         sx={{marginTop: 1}}
                         disableElevation
                 >{operation}</Button>

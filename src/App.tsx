@@ -12,17 +12,13 @@ import ErrorSection from "./components/ErrorSection";
 import postLoader from "./loader/postLoader";
 import UserRoute from "./routes/UserRoute";
 import userLoader from "./loader/userLoader";
-import allPostLoader from "./loader/allPostLoader";
 import AuthRoute from "./routes/AuthRoute";
 import MakeUpdatePostRoute from "./routes/MakeUpdatePostRoute";
 import makePostLoader from "./loader/makePostLoader";
-
-const WIDTH = window.screen.width
-const COL_SIZE = 0.35
+import AccountRoute from "./routes/AccountRoute";
+import accountLoader from "./loader/accountLoader";
 
 function App() {
-    const width = WIDTH * COL_SIZE
-
     const router = createBrowserRouter([
         {
             element: (
@@ -31,32 +27,38 @@ function App() {
                     <Outlet/>
                 </>
             ),
+            errorElement: <ErrorSection />,
             children: [
                 {
                     path: "/",
-                    element: <AllPostRoute width={width}/>,
-                    loader: allPostLoader,
+                    element: <AllPostRoute />,
                 },
                 {
                     path: "/posts/:id",
-                    element: <PostRoute width={width}/>,
+                    element: <PostRoute />,
                     loader: postLoader,
                     errorElement: <ErrorSection/>,
                 },
                 {
                     path: "/users/:id",
-                    element: <UserRoute width={width}/>,
+                    element: <UserRoute />,
                     loader: userLoader,
                     errorElement: <ErrorSection/>,
                 },
                 {
                     path: "/auth",
-                    element: <AuthRoute width={width}/>
+                    element: <AuthRoute />
                 },
                 {
                     path: "/make_post",
-                    element: <MakeUpdatePostRoute width={width} />,
+                    element: <MakeUpdatePostRoute />,
                     loader: makePostLoader
+                },
+                {
+                    path: "/my_account",
+                    element: <AccountRoute />,
+                    loader: accountLoader,
+                    errorElement: <ErrorSection/>,
                 },
                 {
                     path: "*",

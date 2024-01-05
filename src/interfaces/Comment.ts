@@ -5,7 +5,6 @@ export default interface Comment {
     body: string,
     comments_likes_count: number,
     comments_dislikes_count: number,
-    deleted: boolean,
     userState: number,
     owner: boolean,
     created_at: number,
