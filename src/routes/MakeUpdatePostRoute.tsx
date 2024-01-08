@@ -7,15 +7,19 @@ import fetchWithHeader from "../helper/fetchWithHeader";
 import Post from "../interfaces/Post";
 import parseError from "../helper/parseError";
 import textChipColour from "../helper/textChipColour";
+import getTextFieldValue from "../helper/getTextFieldValue";
 
 
-function TagSelection(prop: any) {
+function TagSelection(props: {
+    tags?: Tag[]
+    setSelected: Function
+}) {
     const tags = (useLoaderData() as any).data as Tag[]
-    const updateModeTags = prop.tags as Tag[]
+    const updateModeTags = props.tags as Tag[]
 
     useEffect(() => {
         if (updateModeTags !== undefined) {
-            prop.setSelected(updateModeTags)
+            props.setSelected(updateModeTags)
         }
     }, []);
 
@@ -23,7 +27,7 @@ function TagSelection(prop: any) {
         <Autocomplete
             multiple
             options={tags}
-            onChange={(event, tags) => prop.setSelected(tags)}
+            onChange={(_, tags) => props.setSelected(tags)}
             defaultValue={updateModeTags}
             getOptionLabel={(option: Tag) => option.tag_text}
             renderInput={(params) => (
@@ -31,57 +35,70 @@ function TagSelection(prop: any) {
             )}
             renderTags={(value, getTagProps) =>
                 value.map((tag: Tag, index: number) =>
-                    (<Chip variant="filled" label={tag.tag_text}
-                           sx={{ bgcolor: tag.colour, color: textChipColour(tag.colour) }} {...getTagProps({ index })} />))
+                    (<Chip
+                        variant="filled"
+                        label={tag.tag_text}
+                        sx={{ bgcolor: tag.colour, color: textChipColour(tag.colour) }}
+                        {...getTagProps({ index })}
+                    />))
             }
         />
     );
 }
 
-function MainTextFields(prop: any) {
+function MainTextFields(props: {
+    setSelected: Function
+}) {
     return (
         <div className="main-textfields">
-            <TextField id="create_post_title" label="Title" multiline={true}/>
-            <TagSelection setSelected={prop.setSelected}/>
-            <TextField id="create_post_body" label="Body" multiline={true}/>
-            <TextField id="create_post_image" label="Image's URL" multiline={true}/>
+            <TextField id="create_post_title" label="Title" multiline />
+            <TagSelection setSelected={props.setSelected} />
+            <TextField id="create_post_body" label="Body" multiline />
+            <TextField id="create_post_image" label="Image's URL" multiline />
         </div>
     )
 }
 
-function MainTextFieldsUpdate(prop: any) {
-    const post = prop.post as Post
+function MainTextFieldsUpdate(props: {
+    post: Post,
+    setSelected: Function
+}) {
+    const post = props.post as Post
 
     return (
         <div className="main-textfields">
-            <TextField id="create_post_title" label="Title" defaultValue={post.title} sx={{mb: 1, width: "100%"}} multiline={true}/>
-            <TagSelection setSelected={prop.setSelected} tags={post.tags}/>
-            <TextField id="create_post_body" label="Body" defaultValue={post.body} sx={{mb: 1, width: "100%"}} multiline={true}/>
-            <TextField id="create_post_image" label="Image's URL" defaultValue={post.image} multiline={true}/>
+            <TextField id="create_post_title" label="Title" defaultValue={post.title} multiline />
+            <TagSelection setSelected={props.setSelected} tags={post.tags} />
+            <TextField id="create_post_body" label="Body" defaultValue={post.body} multiline />
+            <TextField id="create_post_image" label="Image's URL" defaultValue={post.image} multiline />
         </div>
     )
 }
 
 function Guidelines() {
     return (
-        <>
+        <div className="section-container">
             <p className="section-title-text">Rules & Guidelines</p>
-            <p style={{ marginTop: "0.5%", fontSize: "130%" }}>Nothing is True, Everything is Permitted</p>
-        </>
+            <p id="guideline-body">
+                Nothing is True, Everything is Permitted
+            </p>
+        </div>
     );
 }
 
-export default function MakeUpdatePostRoute(prop: any) {
+export default function MakeUpdatePostRoute() {
     const navigate = useNavigate()
     const [searchParams] = useSearchParams()
     const [error, setError] = useState<string>("")
     const [selectedTags, setSelectedTags] = useState<Tag[]>([])
+    const [post, setPost] = useState<Post>()
 
-    const operation = searchParams.get("mode") === "update" ? "PATCH" : "POST"
+    let operation = "PATCH"
     let post_id = searchParams.get("post_id")
-    if (post_id === null)
+    if (post_id === null) {
         post_id = "-1"
-    let [post, setPost] = useState<Post | undefined>(undefined)
+        operation = "POST"
+    }
 
     useEffect(() => {
         if (post_id === "-1")
@@ -91,9 +108,9 @@ export default function MakeUpdatePostRoute(prop: any) {
     }, []);
 
     async function postOnClick() {
-        const title = (document.getElementById("create_post_title") as HTMLInputElement).value
-        const body = (document.getElementById("create_post_body") as HTMLInputElement).value
-        let image: string | null = (document.getElementById("create_post_image") as HTMLInputElement).value
+        const title = getTextFieldValue("create_post_title")
+        const body = getTextFieldValue("create_post_body")
+        let image: string | null = getTextFieldValue("create_post_image")
         if (image === "")
             image = null
         const selectedTagsId = selectedTags.map(tag => tag.id)
@@ -111,20 +128,19 @@ export default function MakeUpdatePostRoute(prop: any) {
 
     return (
         <>
-            <div className="section-container" style={{width: prop.width}}>
-                <Guidelines/>
-            </div>
-            <div className="section-container" style={{width: prop.width}}>
+            <Guidelines/>
+            <div className="section-container">
                 {
                     post === undefined
                     ? <MainTextFields setSelected={setSelectedTags}/>
                     : <MainTextFieldsUpdate setSelected={setSelectedTags} post={post} />
                 }
                 <ErrorText error={error} marginTop={0.25} marginBottom={0.25}/>
-                <Button variant="contained"
-                        onClick={postOnClick}
-                        sx={{marginTop: 1}}
-                        disableElevation
+                <Button
+                    disableElevation
+                    variant="contained"
+                    onClick={postOnClick}
+                    sx={{marginTop: 1}}
                 >{operation}</Button>
             </div>
         </>

@@ -28,49 +28,27 @@ header {
 
 .section-container {
     background-color: white;
-    width: 820px;
+    width: 900px;
     padding: 20px;
     border-radius: 5px;
     margin-top: 15px;
+    box-sizing: border-box;
+    box-shadow: rgba(14, 30, 37, 0.12) 0 2px 4px 0, rgba(14, 30, 37, 0.32) 0 2px 16px 0;
 }
 
-@media screen and (max-width: 875px) {
-    .section-container {
-        width: 96%;
-        padding: 10px;
-        margin-left: 2%;
-        margin-right: 2%;
-        box-sizing: border-box;
-    }
-
-    #site-name {
-        display: none;
-    }
-
-    #search-bar-container {
-        margin-left: 1.5%;
-    }
-
-    #large-screen-header {
-        display: none
-    }
-}
-
-@media screen and (min-width: 875px) {
-    #small-screen-header {
-        display: none;
-    }
-}
-
-/*Post*/
-
-#post-like-dislike-separating-div {
+.like-dislike-separating-div {
     background-color: #c8c8c8;
     width: 0.15rem;
     border-radius: 2px;
-    margin-left: 14px;
-    margin-right: 9px;
+    margin-left: 12px;
+    margin-right: 6px;
 }
+
+.no-decor-anchor {
+    text-decoration: none;
+}
+
+/*Post*/
 
 .post-image {
     width: 100%;
@@ -79,14 +57,6 @@ header {
 }
 
 /*Comment*/
-
-#comment-like-dislike-separating-div {
-    background-color: #c8c8c8;
-    width: 0.15rem;
-    border-radius: 2px;
-    margin-left: 12px;
-    margin-right: 6px;
-}
 
 .comment-nest-div {
     display: flex;
@@ -117,7 +87,7 @@ header {
     margin-bottom: 1.5%;
 }
 
-@media screen and (max-width: 875px) {
+@media screen and (max-width: 900px) {
     .sortby-container {
         margin-bottom: 3%;
     }
@@ -175,7 +145,25 @@ header {
     font-size: 150%;
 }
 
+.user-section-item-container {
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 0.5vh;
+    box-shadow: rgba(14, 30, 37, 0.12) 0 2px 4px 0, rgba(14, 30, 37, 0.32) 0 2px 16px 0;
+}
+
 /*Auth*/
+
+#auth-section-container {
+    background-color: white;
+    width: 450px;
+    padding: 20px;
+    border-radius: 5px;
+    margin-top: 15px;
+    box-sizing: border-box;
+    box-shadow: rgba(14, 30, 37, 0.12) 0 2px 4px 0, rgba(14, 30, 37, 0.32) 0 2px 16px 0;
+}
+
 .login-signup-div {
     display: flex;
     flex-direction: column;
@@ -193,10 +181,63 @@ header {
     margin-top: 2%;
 }
 
-/*MakeUpdateTextField*/
+/*MakeUpdatePost*/
 
 .main-textfields {
     display: flex;
     flex-direction: column;
     gap: 10px;
+}
+
+#guideline-body {
+    margin-top: 0.5%;
+    font-size: 130%;
+}
+
+/*Small Screen Styles*/
+
+@media screen and (max-width: 900px) {
+    .section-container {
+        width: 96%;
+        margin-left: 2%;
+        margin-right: 2%;
+    }
+
+    #user-section-username {
+        width: 100%;
+    }
+}
+
+@media screen and (min-width: 600px) {
+    #small-screen-header {
+        display: none;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .section-container {
+        padding: 10px;
+    }
+
+    #site-name {
+        display: none;
+    }
+
+    #large-screen-header {
+        display: none
+    }
+
+    #search-bar-container {
+        margin-left: 1.5%;
+    }
+
+    .comment-nest-div {
+        margin-left: 10%;
+    }
+
+    #auth-section-container {
+        width: 96%;
+        margin-left: 2%;
+        margin-right: 2%;
+    }
 }

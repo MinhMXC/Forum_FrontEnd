@@ -7,48 +7,50 @@ import ErrorText from "../components/ErrorText";
 import parseError from "../helper/parseError";
 import APP_CONSTANTS from "../helper/ApplicationConstants";
 import handleEnterKey from "../helper/handleEnterKey";
+import getTextFieldValue from "../helper/getTextFieldValue";
 
-function SignUp(prop: any) {
-    const handleEnterKey = prop.handleEnterKey
-
+function SignUp(props: {
+    handleEnterKey: any
+}) {
+    const handleEnterKey = props.handleEnterKey
     return (
         <div className="login-signup-div">
             <TextField variant="outlined" label="Email" id="email" />
             <TextField variant="outlined" label="Username" id="username"  />
             <TextField variant="outlined" type="password" label="Password" id="password" />
-            <TextField variant="outlined" type="password" label="Confirm Password" id="password_confirm" onKeyDown={handleEnterKey} />
+            <TextField variant="outlined" type="password" label="Confirm Password"
+                       id="password_confirm" onKeyDown={handleEnterKey}
+            />
         </div>
     );
 }
 
-function Login(prop: any) {
-    const handleEnterKey = prop.handleEnterKey
-
+function Login(props: {
+    handleEnterKey: any
+}) {
+    const handleEnterKey = props.handleEnterKey
     return (
       <div className="login-signup-div">
           <TextField variant="outlined" label="Email or Username" id="identifier" />
-          <TextField variant="outlined" type="password" label="Password" id="password" onKeyDown={handleEnterKey} />
+          <TextField variant="outlined" type="password" label="Password"
+                     id="password" onKeyDown={handleEnterKey} />
       </div>
     );
 }
 
-interface TabPanelProps {
-    children?: React.ReactNode,
+function TabPanel(props: {
     index: number,
     value: number,
-}
-
-function TabPanel(props: TabPanelProps) {
-    const { children, value, index } = props
+    children?: React.ReactNode,
+}) {
+    const { value, index, children } = props
     return (
         <div
             hidden={value !== index}
             id={`tab-${index}`}
             aria-labelledby={`tab-${index}`}
         >
-            { value === index && (
-                children
-            )}
+            {value === index && (children)}
         </div>
     )
 }
@@ -62,8 +64,8 @@ function allyProps(index: number) {
 
 function loginOnClick(navigate: NavigateFunction, setError: Function) {
     return async () => {
-        const identifier = (document.getElementById("identifier")! as HTMLInputElement).value
-        const password = (document.getElementById("password")! as HTMLInputElement).value
+        const identifier = getTextFieldValue("identifier")
+        const password = getTextFieldValue("password")
         const identifier_type = validateEmail(identifier) ? "email" : "username"
         const res = await
             fetch(APP_CONSTANTS.BACKEND_URL + `/auth/sign_in`,
@@ -83,10 +85,10 @@ function loginOnClick(navigate: NavigateFunction, setError: Function) {
 
 function signupOnClick(navigate: NavigateFunction, setError: Function) {
     return async () => {
-        const email = (document.getElementById("email")! as HTMLInputElement).value
-        const username = (document.getElementById("username")! as HTMLInputElement).value
-        const password = (document.getElementById("password")! as HTMLInputElement).value
-        const confirm = (document.getElementById("password_confirm")! as HTMLInputElement).value
+        const email = getTextFieldValue("email")
+        const username = getTextFieldValue("username")
+        const password = getTextFieldValue("password")
+        const confirm = getTextFieldValue("password_confirm")
 
         const res = await
             fetch(APP_CONSTANTS.BACKEND_URL + `/auth/?email=${email}&username=${username}&password=${password}&password_confirmation=${confirm}`,
@@ -103,25 +105,26 @@ function signupOnClick(navigate: NavigateFunction, setError: Function) {
     }
 }
 
-export default function AuthRoute(prop: any) {
+export default function AuthRoute() {
     const [searchParams] = useSearchParams();
-    const [value, setValue] = React.useState(0);
+    const [value, setValue] = useState(0);
+    const [error, setError] = useState("")
     const navigate = useNavigate()
+
+    const buttonStyle = { width: "100%", fontSize: "100%" }
 
     useEffect(() => {
         if (searchParams.get("form") === "1")
             setValue(1)
     }, []);
 
-    const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+    const handleChange = (_: React.SyntheticEvent, newValue: number) => {
         setValue(newValue)
         setError("")
     };
-    const buttonStyle = { width: "100%", fontSize: "100%" }
-    let [error, setError] = useState("")
 
     return (
-        <div className="section-container" style={{width: prop.width / 2}}>
+        <div id="auth-section-container">
             <Box sx={{borderBottom: 1, borderColor: "divider"}}>
                 <Tabs value={value} onChange={handleChange} variant="fullWidth" >
                     <Tab label="Login" {...allyProps(0)} />
@@ -131,14 +134,21 @@ export default function AuthRoute(prop: any) {
             <TabPanel index={0} value={value}>
                 <Login handleEnterKey={handleEnterKey(loginOnClick(navigate, setError))} />
                 <ErrorText error={error} marginTop={2} marginBottom={2} />
-                <Button onClick={loginOnClick(navigate, setError)} variant="contained" disableElevation
-                        sx={buttonStyle}>Login</Button>
+                <Button
+                    onClick={loginOnClick(navigate, setError)}
+                    variant="contained"
+                    disableElevation
+                    sx={buttonStyle}
+                >Login</Button>
             </TabPanel>
             <TabPanel index={1} value={value}>
                 <SignUp handleEnterKey={handleEnterKey(signupOnClick(navigate, setError))} />
                 <ErrorText error={error} marginTop={2} marginBottom={2} />
-                <Button onClick={signupOnClick(navigate, setError)} variant="contained" disableElevation
-                        sx={buttonStyle}>Sign Up</Button>
+                <Button onClick={signupOnClick(navigate, setError)}
+                        variant="contained"
+                        disableElevation
+                        sx={buttonStyle}
+                >Sign Up</Button>
             </TabPanel>
         </div>
     );

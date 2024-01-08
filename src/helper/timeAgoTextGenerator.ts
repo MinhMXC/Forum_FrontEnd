@@ -1,3 +1,9 @@
+function timeAgoTextGenerator(created_at: number, updated_at: number) {
+    return updated_at === created_at
+           ? convertEpochToTimeAgo(+created_at)
+           : convertEpochToTimeAgo(+created_at) + " (edited: " + convertEpochToTimeAgo(+updated_at) + ")"
+}
+
 function convertEpochToTimeAgo(epoch: number) : string {
     const now = Date.now() / 1000 //epoch is in milisecond
     const diff = now - epoch
@@ -11,4 +17,4 @@ function convertEpochToTimeAgo(epoch: number) : string {
     }
 }
 
-export default convertEpochToTimeAgo
+export default timeAgoTextGenerator

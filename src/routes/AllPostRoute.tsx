@@ -5,13 +5,30 @@ import {useNavigate, useSearchParams} from "react-router-dom";
 import {TextField} from "@mui/material";
 import fetchWithHeader from "../helper/fetchWithHeader";
 import parseString from "../helper/parseString";
+import Tag from "../interfaces/Tag";
+import TagsSection from "../components/TagsSection";
 
-export default function AllPostRoute(prop: any) {
+function CreatePost(prop: any) {
+    return (
+        <div className="section-container">
+            <TextField
+                id="create_post"
+                onClick={() => {prop.navigate("/make_post")}}
+                placeholder={prop.placeholder}
+                sx={{mb: 1, width: "100%", margin: 0}}
+                multiline
+            />
+        </div>
+    )
+}
+
+export default function AllPostRoute() {
     const navigate = useNavigate()
     let url = ""
     const [searchParams] = useSearchParams()
     const [posts, setPosts] = useState<Post[]>()
     const [placeholder, setPlaceholder] = useState<string>("")
+    const [tags, setTags] = useState<Tag[]>([])
 
     const searchQuery = searchParams.get("search")?.toLowerCase()
     const titleQuery = searchParams.get("title")?.toLowerCase()
@@ -30,6 +47,9 @@ export default function AllPostRoute(prop: any) {
         fetchWithHeader(url, "GET")
             .then(res => setPosts(res.data))
 
+        fetchWithHeader("/tags", "GET")
+            .then(res => setTags(res.data))
+
         fetchWithHeader("/user_simple", "GET")
             .then(json => json.status === "success"
                 ? setPlaceholder("Create Post as " + json.data.username)
@@ -38,14 +58,14 @@ export default function AllPostRoute(prop: any) {
 
     return (
         <>
-            {/*Create Post */}
-            <div className="section-container" style={{width: prop.width}}>
-                <TextField id="create_post" onClick={() => {navigate("/make_post")}} placeholder={placeholder} sx={{mb: 1, width: "100%", margin: 0}} multiline={true}/>
+            <div className="section-container">
+                <TagsSection tags={tags} size="medium" />
             </div>
+            <CreatePost placeholder={placeholder} navigate={navigate} />
             {
                 posts?.map((post: Post) =>
-                    <div key={post.id} className="section-container" style={{width: prop.width}}>
-                        <PostSection post={post} navigate={navigate} />
+                    <div key={post.id} className="section-container">
+                        <PostSection post={post} navigate={navigate} link={true} />
                     </div>
                 )
             }

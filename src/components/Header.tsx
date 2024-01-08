@@ -1,6 +1,5 @@
 import {
     Accordion, AccordionDetails, AccordionSummary, Autocomplete,
-    Avatar,
     Button, Chip,
     createTheme,
     Grid,
@@ -8,10 +7,8 @@ import {
     InputBase, Menu, MenuItem, TextField,
     ThemeProvider,
 } from "@mui/material";
-import default_avatar from "../resources/default_avatar.jpg";
-import {Clear, KeyboardArrowDown, Search, Tune} from "@mui/icons-material";
+import {Clear, KeyboardArrowDown, KeyboardArrowUp, Search, Tune} from "@mui/icons-material";
 import SimpleUser from "../interfaces/SimpleUser";
-import parseString from "../helper/parseString";
 import React, {useEffect, useState} from "react";
 import signOut from "../helper/signOut";
 import {NavigateFunction, useLocation, useNavigate} from "react-router-dom";
@@ -19,7 +16,9 @@ import fetchWithHeader from "../helper/fetchWithHeader";
 import handleEnterKey from "../helper/handleEnterKey";
 import Tag from "../interfaces/Tag";
 import textChipColour from "../helper/textChipColour";
-import User from "../interfaces/User";
+import UserAvatar from "./UserAvatar";
+import APP_CONSTANTS from "../helper/ApplicationConstants";
+import getTextFieldValue from "../helper/getTextFieldValue";
 
 const searchBarTheme = createTheme({
     components: {
@@ -38,16 +37,16 @@ const searchBarTheme = createTheme({
     }
 })
 
-let popUpTheme = createTheme()
-popUpTheme = createTheme({
+let advancedSearchPopUpTheme = createTheme()
+advancedSearchPopUpTheme = createTheme({
     components: {
         MuiPaper: {
             styleOverrides: {
                 root: {
-                   [popUpTheme.breakpoints.up("md")]: {
+                   [advancedSearchPopUpTheme.breakpoints.up("sm")]: {
                        width: "41%"
                    },
-                   [popUpTheme.breakpoints.down("md")]: {
+                   [advancedSearchPopUpTheme.breakpoints.down("sm")]: {
                        width: "100%"
                    }
                 }
@@ -76,7 +75,9 @@ const tagSelectionTheme = createTheme({
     }
 })
 
-function TagSelection(prop: any) {
+function TagSelection(props: {
+    setSelected: Function
+}) {
     const [tags, setTags] = useState<Tag[]>([])
 
     useEffect(() => {
@@ -87,23 +88,28 @@ function TagSelection(prop: any) {
         <Autocomplete
             multiple
             options={tags}
-            onChange={(event, tags) => prop.setSelected(tags)}
+            onChange={(_, tags) => props.setSelected(tags)}
             getOptionLabel={(option: Tag) => option.tag_text}
             renderInput={(params) => (
                 <TextField {...params} label="Tags" onKeyDown={(e: any) => e.stopPropagation()} />
             )}
             renderTags={(value, getTagProps) =>
                 value.map((tag: Tag, index: number) =>
-                    (<Chip variant="filled" label={tag.tag_text}
-                           sx={{ background: tag.colour, color: textChipColour(tag.colour) }}
-                           {...getTagProps({ index })} />))
+                    (<Chip
+                        variant="filled"
+                        label={tag.tag_text}
+                        sx={{ background: tag.colour, color: textChipColour(tag.colour) }}
+                        {...getTagProps({ index })}
+                    />))
             }
         />
     );
 }
 
-function SearchBar(prop: any) {
-    const navigate = prop.navigate
+function SearchBar(props: {
+    navigate: NavigateFunction
+}) {
+    const navigate = props.navigate
     const [value, setValue] = useState<string>("")
     const [selectedTags, setSelectedTags] = useState<Tag[]>([])
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
@@ -116,9 +122,11 @@ function SearchBar(prop: any) {
     }
 
     function advancedSearchOnClick() {
-        const title = (document.getElementById("search-title") as HTMLInputElement).value.toLowerCase()
-        const body = (document.getElementById("search-body") as HTMLInputElement).value.toLowerCase()
-        const tags = selectedTags.map(tag => tag.tag_text).reduce((x, y) => x === "" ? y : x + "," + y, "")
+        const title = getTextFieldValue("search-title").toLowerCase()
+        const body = getTextFieldValue("search-body")
+        const tags = selectedTags
+                            .map(tag => tag.tag_text)
+                            .reduce((x, y) => x === "" ? y : x + "," + y, "")
         handleClose()
         navigate(`/?title=${title}&body=${body}&tags=${tags}`)
     }
@@ -134,27 +142,40 @@ function SearchBar(prop: any) {
         <>
             {/* Search bar*/}
             <ThemeProvider theme={searchBarTheme}>
-                <InputBase id="search-bar"
-                           startAdornment={
-                               <>
-                                   <IconButton onClick={handleClick}><Tune /></IconButton>
-                                   <IconButton onClick={searchOnClick} sx={{padding: 0.5}}><Search/></IconButton>
-                               </>
-                           }
-                           endAdornment={<IconButton onClick={() => setValue("")} sx={{padding: 0.5}}><Clear/></IconButton>}
-                           placeholder="Scope: All Posts"
-                           fullWidth={true}
-                           type="search"
-                           value={value}
-                           onChange={(event) => setValue(event.target.value)}
-                           onKeyDown={handleEnterKey(searchOnClick)}
+                <InputBase
+                    id="search-bar"
+                    startAdornment={
+                    <>
+                        <IconButton onClick={handleClick}><Tune /></IconButton>
+                        <IconButton onClick={searchOnClick} sx={{padding: 0.5}}>
+                           <Search/>
+                        </IconButton>
+                    </>
+                    }
+                    endAdornment={
+                        <IconButton onClick={() => setValue("")} sx={{padding: 0.5}}>
+                            <Clear/>
+                        </IconButton>
+                    }
+                    placeholder="Scope: All Posts"
+                    fullWidth={true}
+                    type="search"
+                    value={value}
+                    onChange={(event) => setValue(event.target.value)}
+                    onKeyDown={handleEnterKey(searchOnClick)}
                 />
             </ThemeProvider>
 
             {/*Search Advanced*/}
-            <ThemeProvider theme={popUpTheme}>
-                <Menu elevation={2} anchorEl={anchorEl} open={open} disableAutoFocusItem onClose={handleClose}
-                      sx={{ overflow: "show" }}>
+            <ThemeProvider theme={advancedSearchPopUpTheme}>
+                <Menu
+                    elevation={2}
+                    anchorEl={anchorEl}
+                    open={open}
+                    disableAutoFocusItem
+                    onClose={handleClose}
+                    sx={{ overflow: "show" }}
+                >
                     <div className="main-textfields" style={{ padding: "1%" }}>
                         <p style={{ fontSize: "150%", fontWeight: 500, margin: "1%" }}>Advanced</p>
                         <TextField id="search-title" label="Title" onKeyDown={onKeyDown} />
@@ -162,15 +183,15 @@ function SearchBar(prop: any) {
                         <ThemeProvider theme={tagSelectionTheme}>
                             <TagSelection setSelected={setSelectedTags} />
                         </ThemeProvider>
-                        <Button variant="contained" disableElevation onClick={advancedSearchOnClick}>Search</Button>
+                        <Button variant="contained" disableElevation onClick={advancedSearchOnClick}>
+                            Search
+                        </Button>
                     </div>
                 </Menu>
             </ThemeProvider>
         </>
     );
 }
-
-const avatar_size = 44
 
 const themeAccordion = createTheme({
     components: {
@@ -205,35 +226,47 @@ const themeAccordion = createTheme({
     }
 })
 
-function UserInfo(prop: any) {
-    const user = prop.user
-    const navigate = prop.navigate
+function UserInfo(props: {
+    user: SimpleUser,
+    navigate: NavigateFunction
+}) {
+    const user = props.user
+    const navigate = props.navigate
     const [expanded, setExpanded] = useState<boolean>(false)
+
+    const startIcon = expanded
+                      ? <KeyboardArrowUp sx={{ padding: 0 }}/>
+                      : <KeyboardArrowDown sx={{ padding: 0 }}/>
+
+    function profileOnClick() {
+        setExpanded(false)
+        navigate(`/users/${user.id}`)
+    }
+
+    function myAccountOnClick() {
+        setExpanded(false)
+        navigate("my_account")
+    }
 
     return (
         <ThemeProvider theme={themeAccordion}>
-            <Accordion elevation={0} expanded={expanded} disableGutters sx={{ position: "absolute", zIndex: 999}}>
+            <Accordion
+                elevation={0}
+                expanded={expanded}
+                disableGutters sx={{ position: "absolute", zIndex: 999}}
+            >
                 <AccordionSummary sx={{ margin: 0, padding: 0 }}>
                     <Button id="header-menu-button" onClick={() => setExpanded(!expanded)}
-                            startIcon={ <KeyboardArrowDown sx={{ padding: 0 }}/> }>
+                            startIcon={startIcon}>
                         <p id="header-username">{user.username}</p>
-                        <Avatar alt={user.username}
-                                src={parseString(user.image)}
-                                sx={{ height: avatar_size, width: avatar_size }}>
-                            <Avatar alt="default"
-                                    src={default_avatar}
-                                    sx={{ height: avatar_size, width: avatar_size }} />
-                        </Avatar>
+                        <UserAvatar user={user} size={APP_CONSTANTS.AVATAR_HEADER} />
                     </Button>
                 </AccordionSummary>
                 <AccordionDetails>
                     <div className="dropdown-options-div">
-                        <Button onClick={() => {navigate(`/users/${user.id}`); setExpanded(false)}}
-                                color="inherit">Profile</Button>
-                        <Button onClick={() => {navigate("/my_account"); setExpanded(false)}}
-                                color="inherit">My Account</Button>
-                        <Button onClick={signOut(navigate)}
-                                color="inherit">Logout</Button>
+                        <Button onClick={profileOnClick} color="inherit">Profile</Button>
+                        <Button onClick={myAccountOnClick} color="inherit">My Account</Button>
+                        <Button onClick={signOut(navigate)} color="inherit">Logout</Button>
                     </div>
                 </AccordionDetails>
             </Accordion>
@@ -241,38 +274,40 @@ function UserInfo(prop: any) {
     );
 }
 
-function LoginSignInButtons(prop: any) {
+function LoginSignInButtons(props: {
+    isSmallerScreen: boolean
+}) {
     return (
         <div style={{display: "flex"}}>
             <div style={{flexGrow: 1}}></div>
-            <Button variant="contained"
-                    disableElevation
-                    href="/auth?form=0"
-                    sx={{ mr: 1 }}>Login
-            </Button>
+            <Button
+                variant="contained"
+                disableElevation
+                href="/auth?form=0"
+                sx={{ mr: 1 }}
+            >Login</Button>
             {
-            prop.isSmallerScreen
-                ?   undefined
-                :   <Button variant="contained"
-                            disableElevation
-                            href="/auth?form=1">Sign Up
-                    </Button>
+            !props.isSmallerScreen &&
+                <Button
+                    variant="contained"
+                    disableElevation
+                    href="/auth?form=1"
+                >Sign Up</Button>
             }
         </div>
     );
 }
 
-function UserInfoSmall(prop: any) {
-    const user = prop.user as User
-    const navigate: NavigateFunction = prop.navigate
+function UserInfoSmall(prop: {
+    user: SimpleUser,
+    navigate: NavigateFunction
+}) {
+    const user = prop.user
+    const navigate = prop.navigate
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
     const open = Boolean(anchorEl)
 
     const handleClose = () => setAnchorEl(null)
-
-    const handleClick = (e: any) => {
-        setAnchorEl(e.currentTarget)
-    }
 
     const profileOnClick = () => {
         handleClose()
@@ -291,37 +326,24 @@ function UserInfoSmall(prop: any) {
 
     return (
         <div>
-            <Avatar alt={user.username} src={parseString(user.image)}
-                    onClick={handleClick}
-                    sx={{ height: avatar_size, width: avatar_size }}>
-                <Avatar alt="default" src={default_avatar} sx={{ height: "100%", width: "100%" }} />
-            </Avatar>
-            <Menu open={open} anchorEl={anchorEl}
-                  onClose={handleClose}
-                  anchorOrigin={{
-                      vertical: "bottom",
-                      horizontal: "right"
-                  }}
-                  transformOrigin={{
-                      vertical: "top",
-                      horizontal: "right",
-                  }}>
-                <MenuItem onClick={profileOnClick} color="inherit">
-                    Profile
-                </MenuItem>
-                <MenuItem onClick={myAccountOnClick} color="inherit">
-                    My Account
-                </MenuItem>
-                <MenuItem onClick={logOutOnClick} color="inherit">
-                    Logout
-                </MenuItem>
+            <UserAvatar user={user} size={APP_CONSTANTS.AVATAR_HEADER} />
+            <Menu
+                open={open}
+                anchorEl={anchorEl}
+                onClose={handleClose}
+                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                transformOrigin={{ vertical: "top",  horizontal: "right", }}
+            >
+                <MenuItem onClick={profileOnClick} color="inherit">Profile</MenuItem>
+                <MenuItem onClick={myAccountOnClick} color="inherit">My Account</MenuItem>
+                <MenuItem onClick={logOutOnClick} color="inherit">Logout</MenuItem>
             </Menu>
         </div>
     )
 }
 
-function Header() {
-    let [user, setUser] = useState<SimpleUser | undefined>(undefined)
+export default function Header() {
+    let [user, setUser] = useState<SimpleUser>()
     const navigate = useNavigate()
     const location = useLocation()
 
@@ -341,19 +363,23 @@ function Header() {
     return (
         <header>
             <Grid id="large-screen-header" container alignItems="center" height={60}>
-                <Grid item xs={3.5} sx={{ display: "flex", justifyContent: "center" }}>
+                <Grid item sm={3.5} sx={{ display: "flex", justifyContent: "center" }}>
                     <a id="site-name" href="/">Anarchy</a>
                 </Grid>
-                <Grid item xs={5} id="search-bar-container">
+                <Grid item sm={5} id="search-bar-container">
                     <SearchBar navigate={navigate} />
                 </Grid>
-                <Grid item xs={3.5}
+                <Grid item sm={3.5}
                       sx={{ display: "flex", justifyContent: "center", alignSelf: state === 2 ? "start" : "center" }}>
-                    {state === 2
+                    {
+                        user === undefined
+                        ? undefined
+                        : state === 2
                         ? <UserInfo user={user} navigate={navigate} />
                         : state === 1
-                            ? <LoginSignInButtons isSmallerScreen={false} />
-                            : undefined}
+                        ? <LoginSignInButtons isSmallerScreen={false} />
+                        : undefined
+                    }
                 </Grid>
             </Grid>
 
@@ -362,15 +388,17 @@ function Header() {
                     <SearchBar navigate={navigate} />
                 </Grid>
                 <Grid item xs="auto" sx={{ mr: 1 }}>
-                    {state === 2
+                    {
+                        user === undefined
+                        ? undefined
+                        : state === 2
                         ? <UserInfoSmall user={user} navigate={navigate} />
                         : state === 1
-                            ? <LoginSignInButtons isSmallerScreen={true} />
-                            : undefined}
+                        ? <LoginSignInButtons isSmallerScreen={true} />
+                        : undefined
+                    }
                 </Grid>
             </Grid>
         </header>
     );
 }
-
-export default Header
