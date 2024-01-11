@@ -1,20 +1,24 @@
 import React, {useEffect, useState} from "react";
 import PostSection from "../components/PostSection";
 import Post from "../interfaces/Post";
-import {useNavigate, useSearchParams} from "react-router-dom";
+import {NavigateFunction, useNavigate, useSearchParams} from "react-router-dom";
 import {TextField} from "@mui/material";
 import fetchWithHeader from "../helper/fetchWithHeader";
 import parseString from "../helper/parseString";
 import Tag from "../interfaces/Tag";
 import TagsSection from "../components/TagsSection";
 
-function CreatePost(prop: any) {
+function CreatePost(props: {
+    placeholder: string,
+    navigate: NavigateFunction,
+    url: string
+}) {
     return (
         <div className="section-container">
             <TextField
                 id="create_post"
-                onClick={() => {prop.navigate("/make_post")}}
-                placeholder={prop.placeholder}
+                onClick={() => {props.navigate(props.url)}}
+                placeholder={props.placeholder}
                 sx={{mb: 1, width: "100%", margin: 0}}
                 multiline
             />
@@ -54,18 +58,25 @@ export default function AllPostRoute() {
             .then(json => json.status === "success"
                 ? setPlaceholder("Create Post as " + json.data.username)
                 : setPlaceholder("Please Login to Post"))
-    }, [searchParams]);
+    }, [searchParams, url]);
+
+    const createPostURL = placeholder === "Please Login to Post" ? "/auth" : "/make_post"
 
     return (
         <>
             <div className="section-container">
                 <TagsSection tags={tags} size="medium" />
             </div>
-            <CreatePost placeholder={placeholder} navigate={navigate} />
+            <CreatePost placeholder={placeholder} navigate={navigate} url={createPostURL} />
             {
                 posts?.map((post: Post) =>
                     <div key={post.id} className="section-container">
-                        <PostSection post={post} navigate={navigate} link={true} />
+                        <PostSection
+                            post={post}
+                            navigate={navigate}
+                            postLink={true}
+                            userLink={true}
+                        />
                     </div>
                 )
             }

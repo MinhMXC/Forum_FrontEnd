@@ -4,7 +4,7 @@ import {
     AccordionSummary,
     Button, createTheme,
     Grid,
-    IconButton, Menu, MenuItem, TextField,
+    IconButton, Menu, MenuItem,
     ThemeProvider,
     Typography
 } from "@mui/material";
@@ -14,14 +14,13 @@ import "../App.css"
 import Comment from "../interfaces/Comment"
 import React, {useState} from "react";
 import {NavigateFunction} from "react-router-dom";
-import ErrorText from "./ErrorText";
 import fetchWithHeader from "../helper/fetchWithHeader";
-import parseError from "../helper/parseError";
 import SimpleUser from "../interfaces/SimpleUser";
 import APP_CONSTANTS from "../helper/ApplicationConstants";
 import UserAvatar from "./UserAvatar";
 import LikeDislikeSection from "./LikeDislikeSection";
-import getTextFieldValue from "../helper/getTextFieldValue";
+import TextEditor from "./TextEditor";
+import CustomAnchor from "./CustomAnchor";
 
 const secondaryTextColour= "#8a8a8a"
 
@@ -66,11 +65,11 @@ function UsernameDate(props: {
                 <Typography variant="body1" sx={{ fontWeight: 500 }}>{comment.user.username}</Typography>
             </Grid>
             {
-                props.post_user_id === comment.user.id
-                    ?   <Grid item xs="auto" sx={{ mt: 0.1 }}>
-                            <Typography color="secondary" sx={{ fontWeight: 600, ml: -0.25 }}>OP</Typography>
-                        </Grid>
-                    : undefined
+                props.post_user_id === comment.user.id && props.post_user_id !== -1
+                ?   <Grid item xs="auto" sx={{ mt: 0.1 }}>
+                        <Typography color="secondary" sx={{ fontWeight: 600, ml: -0.25 }}>OP</Typography>
+                    </Grid>
+                : undefined
             }
             <Grid item xs="auto">
                 <Typography variant="body2" color={secondaryTextColour} sx={{ mt: 0.1 }}>
@@ -132,7 +131,7 @@ function CommentBottomControls(props: {
     const navigate = props.navigate
 
     return (
-        <Grid container alignItems="center" spacing={0.3} sx={{ mb: 1, mt: 1 }} color={secondaryTextColour} fontWeight="450">
+        <Grid container alignItems="center" spacing={0.3} sx={{ mt: 0.5 }} color={secondaryTextColour} fontWeight="450">
             <LikeDislikeSection
                 object={comment}
                 type="comment"
@@ -150,114 +149,70 @@ function CommentBottomControls(props: {
 }
 
 function AvatarColumn(props: {
-    user: SimpleUser
+    user: SimpleUser,
+    link: boolean
 }) {
     const user = props.user
+
     return (
         <div className="avatar-column-div">
-            <a href={APP_CONSTANTS.FRONTEND_URL + `/users/${user.id}`}
-               style={{textDecoration: "none", color: "inherit"}}>
+
+            <CustomAnchor hasLink={props.link} URL={`/users/${user.id}`}>
                 <UserAvatar user={user} size={APP_CONSTANTS.AVATAR_SMALL} />
-            </a>
+            </CustomAnchor>
             <div className="comment-nest-div"/>
         </div>
     );
 }
 
-function ReplyForm(props: {
+export default function CommentE(props: {
     comment: Comment,
-    onClick: any,
-    error: string
+    post_user_id: number,
+    navigate: NavigateFunction,
+    link: boolean
 }) {
-    const user = props.comment.user
-    const onClick = props.onClick
-    return (
-        <div style={{ marginBottom: "2%" }}>
-            <TextField id={`reply_comment_${props.comment.id}`} placeholder={`Replying to ${user.username}`} sx={{width: "100%"}} multiline={true}/>
-            <ErrorText error={props.error}/>
-            <Button variant="contained" onClick={onClick} disableElevation sx={{ textTransform: "none" }}>Reply</Button>
-        </div>
-    );
-}
+    const navigate = props.navigate
 
-export default function CommentE(prop: any) {
-    const comment = prop.comment as Comment
-    const navigate = prop.navigate
-    const [body, setBody] = useState<string>(comment.body)
+    const [comment, setComment] = useState<Comment>(props.comment)
+    const [replyComments, setReplyComments] = useState<Comment[]>(comment.comments)
     const [isPatching, setIsPatching] = useState<boolean>(false)
     const [isReplying, setIsReplying] = useState<boolean>(false)
-    const [replyError, setReplyError] = useState<string>("")
-    const [patchError, setPatchError] = useState<string>("")
-
-    //REPLY
 
     function replyOnClick() {
         setIsReplying(!isReplying)
     }
 
-    async function sendReplyComment() {
-        const text = getTextFieldValue(`reply_comment_${comment.id}`)
-        const res = await fetchWithHeader("/comments", "POST",
-            ({body: text, comment_id: comment.id, post_id: comment.post_id} as any))
-        if (res.status === "error") {
-            setReplyError(parseError(res.message))
-            return
-        }
-
-        setReplyError("Success")
-        navigate(0)
-    }
-
-    //PATCH
-
-    async function patchOnClick() {
-        const newCommentBody = getTextFieldValue(`patch-comment-${comment.id}`)
-        const res = await fetchWithHeader(
-            `/comments/${comment.id}`,
-            "PATCH",
-            {body: newCommentBody} as any
-        )
-        if (res.status === "error") {
-            setPatchError(parseError(res.message))
-            return
-        }
-
-        setIsPatching(false)
-        setBody(newCommentBody)
-    }
-
-    function PatchForm() {
-        return (
-            <>
-                <TextField
-                    id={`patch-comment-${comment.id}`}
-                    label="Edit Comment"
-                    defaultValue={body}
-                    multiline
-                    sx={{ width: "100%" }}
-                />
-                <ErrorText error={patchError} />
-                <Button variant="contained" disableElevation onClick={patchOnClick}>Patch</Button>
-            </>
-        )
-    }
-
     return (
-        <Grid container key={comment.id}>
+        <Grid container key={comment.id} sx={{ mt: "10px" }}>
             <Grid item xs="auto" sx={{ display: "flex" }}>
-                <AvatarColumn user={comment.user} />
+                <AvatarColumn user={comment.user} link={props.link} />
             </Grid>
             <Grid item xs>
                 <ThemeProvider theme={themeAccordion}>
                     <Accordion defaultExpanded disableGutters elevation={0}>
                         <AccordionSummary>
-                            <UsernameDate comment={comment} post_user_id={prop.post_user_id} />
+                            <UsernameDate comment={comment} post_user_id={props.post_user_id} />
                         </AccordionSummary>
                         <AccordionDetails>
                             {
                                 isPatching
-                                ? <PatchForm />
-                                : <Typography sx={{ whiteSpace: "pre-line" }}>{body}</Typography>
+                                ? <TextEditor
+                                        postURL={`/comments/${comment.id}`}
+                                        method="PATCH"
+                                        buttonText="Patch"
+                                        fillJSON={(str: string) => {
+                                            return {body: str}
+                                        }}
+                                        onSuccessFunc={(_: string, resData: any) => {
+                                            setComment(resData)
+                                            setIsPatching(false)
+                                        }}
+                                        defaultValue={comment.body}
+                                  />
+                                : <Typography
+                                      dangerouslySetInnerHTML={{ __html: comment.body }}
+                                      sx={{ whiteSpace: "pre-line", overflowWrap: "anywhere" }}
+                                    />
                             }
                             <CommentBottomControls
                                 comment={comment}
@@ -267,21 +222,29 @@ export default function CommentE(prop: any) {
                             />
                             {
                                 isReplying &&
-                                <ReplyForm
-                                    comment={comment}
-                                    error={replyError}
-                                    onClick={sendReplyComment}
+                                <TextEditor
+                                    postURL="/comments"
+                                    method="POST"
+                                    buttonText="Reply"
+                                    fillJSON={(editorValue: string) => {
+                                        return {body: editorValue, post_id: comment.post_id, comment_id: comment.id}
+                                    }}
+                                    onSuccessFunc={(_: string, resData: any) => {
+                                        setIsReplying(false)
+                                        setReplyComments([resData, ...replyComments])
+                                    }}
+                                    placeholder={`Replying to ${comment.user.username}`}
                                 />
                             }
                             {
-                                comment.comments?.map(comment =>
-                                <Grid item xs="auto">
+                                replyComments?.map(comment =>
                                     <CommentE
+                                        key={comment.id}
                                         comment={comment}
-                                        post_user_id={prop.post_user_id}
+                                        post_user_id={props.post_user_id}
                                         navigate={navigate}
+                                        link={props.link}
                                     />
-                                </Grid>
                             )}
                         </AccordionDetails>
                     </Accordion>

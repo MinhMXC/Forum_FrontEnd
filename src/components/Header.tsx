@@ -177,7 +177,7 @@ function SearchBar(props: {
                     sx={{ overflow: "show" }}
                 >
                     <div className="main-textfields" style={{ padding: "1%" }}>
-                        <p style={{ fontSize: "150%", fontWeight: 500, margin: "1%" }}>Advanced</p>
+                        <p style={{ fontSize: "150%", fontWeight: 500, margin: "1%" }}>Advanced Post Search</p>
                         <TextField id="search-title" label="Title" onKeyDown={onKeyDown} />
                         <TextField id="search-body" label="Body" onKeyDown={onKeyDown} />
                         <ThemeProvider theme={tagSelectionTheme}>
@@ -256,8 +256,11 @@ function UserInfo(props: {
                 disableGutters sx={{ position: "absolute", zIndex: 999}}
             >
                 <AccordionSummary sx={{ margin: 0, padding: 0 }}>
-                    <Button id="header-menu-button" onClick={() => setExpanded(!expanded)}
-                            startIcon={startIcon}>
+                    <Button
+                        id="header-menu-button"
+                        onClick={() => setExpanded(!expanded)}
+                        startIcon={startIcon}
+                    >
                         <p id="header-username">{user.username}</p>
                         <UserAvatar user={user} size={APP_CONSTANTS.AVATAR_HEADER} />
                     </Button>
@@ -307,7 +310,8 @@ function UserInfoSmall(prop: {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
     const open = Boolean(anchorEl)
 
-    const handleClose = () => setAnchorEl(null)
+    const handleClick = (event: any) => setAnchorEl(event.currentTarget)
+    const handleClose = () => {setAnchorEl(null)}
 
     const profileOnClick = () => {
         handleClose()
@@ -325,20 +329,25 @@ function UserInfoSmall(prop: {
     }
 
     return (
-        <div>
-            <UserAvatar user={user} size={APP_CONSTANTS.AVATAR_HEADER} />
+        <>
+            <div onClick={handleClick}>
+                <UserAvatar
+                    user={user}
+                    size={APP_CONSTANTS.AVATAR_HEADER}
+                />
+            </div>
             <Menu
                 open={open}
                 anchorEl={anchorEl}
                 onClose={handleClose}
-                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                transformOrigin={{ vertical: "top",  horizontal: "right", }}
+                anchorOrigin={{vertical: "bottom", horizontal: "right"}}
+                transformOrigin={{vertical: "top", horizontal: "right"}}
             >
                 <MenuItem onClick={profileOnClick} color="inherit">Profile</MenuItem>
                 <MenuItem onClick={myAccountOnClick} color="inherit">My Account</MenuItem>
                 <MenuItem onClick={logOutOnClick} color="inherit">Logout</MenuItem>
             </Menu>
-        </div>
+        </>
     )
 }
 

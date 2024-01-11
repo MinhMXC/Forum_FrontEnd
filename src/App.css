@@ -6,8 +6,8 @@ input[type="search"]::-webkit-search-cancel-button {
     -webkit-appearance: none;
 }
 
-p {
-    margin: 0
+h1, h2, h3, h4, h5, h6, p {
+    margin: 0;
 }
 
 header {
@@ -50,9 +50,9 @@ header {
 
 /*Post*/
 
-.post-image {
-    width: 100%;
-    height: 100%;
+.post-image-container {
+    display: flex;
+    justify-content: center;
     margin-top: 1%;
 }
 
@@ -64,7 +64,7 @@ header {
     background-color: #c8c8c8;
     width: 0.12rem;
     border-radius: 2px;
-    margin: 35% 0 40% 45%;
+    margin: 35% 0 20% 45%;
 }
 
 .avatar-column-div {
@@ -84,13 +84,21 @@ header {
 
 .sortby-container {
     color: #9c9c9c;
-    margin-bottom: 1.5%;
+    margin-bottom: 20px;
 }
 
 @media screen and (max-width: 900px) {
     .sortby-container {
         margin-bottom: 3%;
     }
+}
+
+.post-comment-sort-by-separating-div {
+    width: 100%;
+    height: 2px;
+    background-color: #e0e0e0;
+    margin-top: 15px;
+    margin-bottom: 15px;
 }
 
 /*Header*/
@@ -216,7 +224,7 @@ header {
 
 @media screen and (max-width: 600px) {
     .section-container {
-        padding: 10px;
+        padding: 12px;
     }
 
     #site-name {
@@ -239,5 +247,10 @@ header {
         width: 96%;
         margin-left: 2%;
         margin-right: 2%;
+    }
+
+    .error-text {
+        margin-top: 5%;
+        margin-bottom: 5%;
     }
 }

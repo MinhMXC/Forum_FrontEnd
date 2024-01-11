@@ -27,7 +27,7 @@ function App() {
                     <Outlet/>
                 </>
             ),
-            errorElement: <ErrorSection />,
+            errorElement: <ErrorSection errorParams="Something has gone terribly wrong" />,
             children: [
                 {
                     path: "/",

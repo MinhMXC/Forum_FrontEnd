@@ -34,7 +34,6 @@ function ChangeAvatar(props: {
     const navigate = props.navigate
     const [imageURL, setImageURL] = useState<string>(user.image)
     const [error, setError] = useState<string>("")
-    console.log("bruh")
 
     async function buttonOnClick() {
         const res = await

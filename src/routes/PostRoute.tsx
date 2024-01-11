@@ -11,8 +11,9 @@ export default function PostRoute() {
             <div className="section-container">
                 <PostSection
                     post={post}
-                    link={false}
                     navigate={navigate}
+                    postLink={false}
+                    userLink={true}
                 />
             </div>
             <div className="section-container">

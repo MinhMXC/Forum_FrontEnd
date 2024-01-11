@@ -14,22 +14,21 @@ import APP_CONSTANTS from "../helper/ApplicationConstants";
 import UserAvatar from "./UserAvatar";
 import TagsSection from "./TagsSection";
 import LikeDislikeSection from "./LikeDislikeSection";
+import CustomAnchor from "./CustomAnchor";
 
 const secondaryTextColour= "#8a8a8a"
 
 function ImageUsernameDate(props: {
-    post: Post
+    post: Post,
+    link: boolean
 }) {
     const post = props.post
     return (
         <Grid container alignItems="center" spacing={1}>
             <Grid item xs="auto">
-                <a
-                    href={APP_CONSTANTS.FRONTEND_URL + "/users/" + post.user.id}
-                    style={{textDecoration: "none", color: "inherit"}}
-                >
+                <CustomAnchor hasLink={props.link} URL={`/users/${post.user.id}`}>
                     <UserAvatar user={post.user} size={APP_CONSTANTS.AVATAR_MEDIUM} />
-                </a>
+                </CustomAnchor>
             </Grid>
             <Grid item xs="auto">
                 <Typography variant="h6">{post.user.username}</Typography>
@@ -43,22 +42,57 @@ function ImageUsernameDate(props: {
     );
 }
 
-function PostBody(props: {
+function PostImage(props: {
     post: Post
+}) {
+    const post = props.post
+    const [isMaxWidth, setIsMaxWidth] = useState<boolean>(false)
+
+    let style: any = {
+        maxWidth: "100%",
+        maxHeight: window.screen.height * 2 / 3,
+        zIndex: 999,
+    }
+    if (isMaxWidth) {
+        style = {
+            width: "100%",
+            height: "100%",
+            zIndex: 999,
+        }
+    }
+
+    return (
+        <div className="post-image-container">
+            <img
+                src={parseString(post.image)}
+                alt={`post-${post.id}-img`}
+                onClick={() => setIsMaxWidth(!isMaxWidth)}
+                style={style}
+            />
+        </div>
+    )
+}
+
+function PostBody(props: {
+    post: Post,
+    link: boolean
 }) {
     const post = props.post
     return (
         <>
-            <Typography variant="h5" fontWeight="450">
-                {post.title}
-            </Typography>
-            {
-                post.image !== null &&
-                <img src={parseString(post.image)} className="post-image" alt={`post-${post.id}-img`} />
-            }
-            <Typography variant="body1" sx={{ mt: 1, whiteSpace: "pre-line" }}>
-                {post.body}
-            </Typography>
+            <CustomAnchor hasLink={props.link} URL={`/posts/${post.id}`}>
+                <Typography variant="h5" fontWeight="450">{post.title}</Typography>
+            </CustomAnchor>
+
+            <PostImage post={post} />
+
+            <CustomAnchor hasLink={props.link} URL={`/posts/${post.id}`}>
+                <Typography
+                    variant="body1"
+                    dangerouslySetInnerHTML={{__html: post.body}}
+                    sx={{mt: 1, whiteSpace: "pre-line"}}
+                />
+            </CustomAnchor>
         </>
     );
 }
@@ -138,25 +172,19 @@ function PostBottomControls(props: {
 export default function PostSection(props: {
     post: Post,
     navigate: NavigateFunction,
-    link: boolean,
+    postLink: boolean,
+    userLink: boolean
 }) {
     let post = props.post as Post
-    const pointerEvent = props.link ? "auto" : "none"
     const div_opacity = {
-        opacity: !props.link ? 1 : post.visited ? 0.6 : 1
+        opacity: !props.postLink ? 1 : post.visited ? 0.6 : 1
     }
 
     return (
         <div style={div_opacity} key={post.id}>
-            <ImageUsernameDate post={post} />
+            <ImageUsernameDate post={post} link={props.userLink} />
             <TagsSection tags={post.tags} sx={{ mt: 0, mb: 0.4 }} size="small" />
-            <a
-                href={APP_CONSTANTS.FRONTEND_URL + "/posts/" + post.id}
-                className="no-decor-anchor"
-                style={{ color: "inherit", pointerEvents: pointerEvent }}
-            >
-                <PostBody post={post} />
-            </a>
+            <PostBody post={post} link={props.postLink} />
             <PostBottomControls post={post} navigate={props.navigate} />
         </div>
     );

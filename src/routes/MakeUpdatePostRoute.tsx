@@ -1,13 +1,12 @@
-import {Autocomplete, Button, Chip, TextField} from "@mui/material";
+import {Autocomplete, Chip, TextField} from "@mui/material";
 import React, {useEffect, useState} from "react";
-import {useLoaderData, useNavigate, useSearchParams} from "react-router-dom";
-import ErrorText from "../components/ErrorText";
+import {NavigateFunction, useLoaderData, useNavigate, useSearchParams} from "react-router-dom";
 import Tag from "../interfaces/Tag";
 import fetchWithHeader from "../helper/fetchWithHeader";
 import Post from "../interfaces/Post";
-import parseError from "../helper/parseError";
 import textChipColour from "../helper/textChipColour";
 import getTextFieldValue from "../helper/getTextFieldValue";
+import TextEditor from "../components/TextEditor";
 
 
 function TagSelection(props: {
@@ -47,20 +46,38 @@ function TagSelection(props: {
 }
 
 function MainTextFields(props: {
-    setSelected: Function
+    navigate: NavigateFunction,
+    selectedTags: Tag[],
+    setSelectedTags: Function
 }) {
     return (
         <div className="main-textfields">
             <TextField id="create_post_title" label="Title" multiline />
-            <TagSelection setSelected={props.setSelected} />
-            <TextField id="create_post_body" label="Body" multiline />
+            <TagSelection setSelected={props.setSelectedTags} />
             <TextField id="create_post_image" label="Image's URL" multiline />
+            <TextEditor
+                postURL="/posts"
+                method="POST"
+                buttonText="Post"
+                fillJSON={(str: string) => {
+                    const title = getTextFieldValue("create_post_title")
+                    let image: string | null = getTextFieldValue("create_post_image")
+                    if (image === "")
+                        image = null
+                    const selectedTagsId = props.selectedTags.map(tag => tag.id)
+                    return {post: {title: title, body: str, tag_ids: selectedTagsId, image: image}}
+                }}
+                onSuccessFunc={(_: string, resData: any) => props.navigate(`/posts/${resData.id}`)}
+                placeholder="Body"
+            />
         </div>
     )
 }
 
 function MainTextFieldsUpdate(props: {
     post: Post,
+    navigate: NavigateFunction,
+    selectedTags: Tag[],
     setSelected: Function
 }) {
     const post = props.post as Post
@@ -69,8 +86,22 @@ function MainTextFieldsUpdate(props: {
         <div className="main-textfields">
             <TextField id="create_post_title" label="Title" defaultValue={post.title} multiline />
             <TagSelection setSelected={props.setSelected} tags={post.tags} />
-            <TextField id="create_post_body" label="Body" defaultValue={post.body} multiline />
             <TextField id="create_post_image" label="Image's URL" defaultValue={post.image} multiline />
+            <TextEditor
+                postURL={`/posts/${post.id}`}
+                method="PATCH"
+                buttonText="Patch"
+                fillJSON={(str: string) => {
+                    const title = getTextFieldValue("create_post_title")
+                    let image: string | null = getTextFieldValue("create_post_image")
+                    if (image === "")
+                        image = null
+                    const selectedTagsId = props.selectedTags.map(tag => tag.id)
+                    return {post: {title: title, body: str, tag_ids: selectedTagsId, image: image}}
+                }}
+                onSuccessFunc={() => props.navigate(`/posts/${post.id}`)}
+                defaultValue={post.body}
+            />
         </div>
     )
 }
@@ -89,15 +120,12 @@ function Guidelines() {
 export default function MakeUpdatePostRoute() {
     const navigate = useNavigate()
     const [searchParams] = useSearchParams()
-    const [error, setError] = useState<string>("")
     const [selectedTags, setSelectedTags] = useState<Tag[]>([])
     const [post, setPost] = useState<Post>()
 
-    let operation = "PATCH"
     let post_id = searchParams.get("post_id")
     if (post_id === null) {
         post_id = "-1"
-        operation = "POST"
     }
 
     useEffect(() => {
@@ -107,41 +135,25 @@ export default function MakeUpdatePostRoute() {
             .then(res => setPost(res.data as Post))
     }, []);
 
-    async function postOnClick() {
-        const title = getTextFieldValue("create_post_title")
-        const body = getTextFieldValue("create_post_body")
-        let image: string | null = getTextFieldValue("create_post_image")
-        if (image === "")
-            image = null
-        const selectedTagsId = selectedTags.map(tag => tag.id)
-        const url = operation === "PATCH" ? `/posts/${post_id}` : "/posts"
-        const res = await fetchWithHeader(url, operation,
-            ({post: {title: title, body: body, tag_ids: selectedTagsId, image: image}} as any))
-        if (res.status === "error") {
-            setError(parseError(res.message))
-            return
-        }
-
-        setError("Success")
-        navigate(`/posts/${res.data.id}`)
-    }
-
     return (
         <>
             <Guidelines/>
+
             <div className="section-container">
                 {
                     post === undefined
-                    ? <MainTextFields setSelected={setSelectedTags}/>
-                    : <MainTextFieldsUpdate setSelected={setSelectedTags} post={post} />
+                    ? <MainTextFields
+                            navigate={navigate}
+                            selectedTags={selectedTags}
+                            setSelectedTags={setSelectedTags}
+                        />
+                    : <MainTextFieldsUpdate
+                            post={post}
+                            navigate={navigate}
+                            selectedTags={selectedTags}
+                            setSelected={setSelectedTags}
+                        />
                 }
-                <ErrorText error={error} marginTop={0.25} marginBottom={0.25}/>
-                <Button
-                    disableElevation
-                    variant="contained"
-                    onClick={postOnClick}
-                    sx={{marginTop: 1}}
-                >{operation}</Button>
             </div>
         </>
     );

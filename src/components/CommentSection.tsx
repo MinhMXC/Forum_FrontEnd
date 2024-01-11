@@ -1,69 +1,30 @@
 import React, {useEffect, useState} from 'react';
 import CommentE from './Comment'
 import Comment from '../interfaces/Comment'
-import {Button, ButtonGroup, Grid, TextField, Typography} from "@mui/material";
+import {Button, ButtonGroup, Grid, Typography} from "@mui/material";
 import {NavigateFunction} from "react-router-dom";
-import ErrorText from "./ErrorText";
-import fetchWithHeader from "../helper/fetchWithHeader";
-import parseError from "../helper/parseError";
-import getTextFieldValue from "../helper/getTextFieldValue";
+import TextEditor from "./TextEditor";
 
-function InputComment(props: {
-    post_id: number,
-    navigate: NavigateFunction
+function SortByButton(props: {
+    id: number,
+    text: string,
+    sortBy: number,
+    setSortBy: Function,
 }) {
-    const [error, setError] = useState<string>("")
-
-    async function commentButtonOnClick() {
-        const text = getTextFieldValue("post_comment")
-        const res = await fetchWithHeader("/comments", "POST",
-            ({body: text, post_id: props.post_id} as any))
-        if (res.status === "error") {
-            setError(parseError(res.message))
-            return
-        }
-
-        setError("Success")
-        props.navigate(0)
-    }
-
+    const color = props.sortBy === props.id ? "primary" : "inherit"
     return (
-        <div>
-            <TextField
-                id="post_comment"
-                placeholder="Add your thoughts!"
-                sx={{ width: "100%" }}
-                multiline
-            />
-            <ErrorText error={error}/>
-            <Button
-                variant="contained"
-                onClick={commentButtonOnClick}
-                disableElevation
-                sx={{ mt: {xs: 0.5} }}
-            >Comment</Button>
-        </div>
-    );
+        <Button color={color} onClick={() => props.setSortBy(props.id)}>
+            {props.text}
+        </Button>
+    )
 }
 
-function SortByButtons(props: {
+function SortByButtonSection(props: {
     sortBy: number,
     setSortBy: any
 }) {
     const sortBy = props.sortBy
     const setSortBy = props.setSortBy
-
-    function SortByButton(props: {
-        id: number,
-        text: string
-    }) {
-        const color = sortBy === props.id ? "primary" : "inherit"
-        return (
-            <Button color={color} onClick={() => setSortBy(props.id)}>
-                {props.text}
-            </Button>
-        )
-    }
 
     return (
         <div className="sortby-container">
@@ -80,16 +41,19 @@ function SortByButtons(props: {
                         color="inherit"
                         sx={{ width: "100%" }}
                     >
-                        <SortByButton id={0} text="Likes"></SortByButton>
-                        <SortByButton id={1} text="Dislikes"></SortByButton>
-                        <SortByButton id={2} text="New"></SortByButton>
-                        <SortByButton id={3} text="Old"></SortByButton>
+                        <SortByButton id={0} text="Likes" sortBy={sortBy} setSortBy={setSortBy} />
+                        <SortByButton id={1} text="Dislikes" sortBy={sortBy} setSortBy={setSortBy} />
+                        <SortByButton id={2} text="New" sortBy={sortBy} setSortBy={setSortBy} />
+                        <SortByButton id={3} text="Old" sortBy={sortBy} setSortBy={setSortBy} />
                     </ButtonGroup>
                 </Grid>
             </Grid>
         </div>
     )
 }
+
+const MemoCommentE = React.memo(CommentE)
+const MemoTextEditor = React.memo(TextEditor)
 
 export default function CommentSection(props: {
     post_id: number,
@@ -123,20 +87,33 @@ export default function CommentSection(props: {
     }, [sortBy]);
 
     return (
-        <div>
-            <SortByButtons sortBy={sortBy} setSortBy={setSortBy} />
-            <InputComment post_id={props.post_id} navigate={props.navigate} />
-            <div style={{ marginBottom: comments.length === 0 ? undefined : "-10px" }}>
+        <>
+            <MemoTextEditor
+                postURL="/comments"
+                method="POST"
+                buttonText="Comment"
+                fillJSON={(editorValue: string) => {
+                    return {body: editorValue, post_id: props.post_id}
+                }}
+                onSuccessFunc={(_: string, resData: any) => setComments([resData, ...comments])}
+                placeholder="Add your thoughts!"
+            />
+
+            <div className="post-comment-sort-by-separating-div">&nbsp;</div>
+
+            <SortByButtonSection sortBy={sortBy} setSortBy={setSortBy}/>
+
+            <div style={{marginBottom: comments.length === 0 ? undefined : "-10px"}}>
                 {comments.map(comment =>
-                    <div style={{ marginTop: "10px" }}>
-                        <CommentE
-                            comment={comment}
-                            post_user_id={props.post_user_id}
-                            navigate={props.navigate}
-                        />
-                    </div>
+                    <MemoCommentE
+                        key={comment.id}
+                        comment={comment}
+                        post_user_id={props.post_user_id}
+                        navigate={props.navigate}
+                        link={true}
+                    />
                 )}
             </div>
-        </div>
+        </>
     );
 }

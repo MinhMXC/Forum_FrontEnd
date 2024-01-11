@@ -11,6 +11,7 @@ import User from "../interfaces/User";
 import Post from "../interfaces/Post";
 import Comment from "../interfaces/Comment"
 import {ReactNode} from "react";
+import CustomAnchor from "../components/CustomAnchor";
 
 function ImageUsernameAge(props: {
     user: User
@@ -88,20 +89,28 @@ export default function UserRoute() {
             <Bio user={user}/>
             <UserSectionAccordion title="Posts" children={
                 posts.map(post =>
-                    <div className="user-section-item-container">
-                        <PostSection post={post} navigate={navigate} link={true}/>
+                    <div className="user-section-item-container" key={post.id}>
+                        <PostSection post={post} navigate={navigate} postLink={true} userLink={true}/>
                     </div>
                 )
             } />
             <UserSectionAccordion title="Comments" children={
                 comments.map(comment =>
-                    <div className="user-section-item-container">
-                        <a
-                            className="no-decor-anchor"
-                            href={APP_CONSTANTS.FRONTEND_URL + `/posts/${comment.post_id}`}
-                        >
-                            <CommentE comment={comment} />
-                        </a>
+                    <div
+                        key={comment.id}
+                        className="user-section-item-container"
+                    >
+                        <CustomAnchor hasLink={true} URL={`/posts/${comment.post_id}`}>
+                            {/*// CommentE have marginTop: 10px by default*/}
+                            <div style={{ marginTop: "-10px" }}>
+                                <CommentE
+                                    comment={comment}
+                                    navigate={navigate}
+                                    post_user_id={-1}
+                                    link={false}
+                                />
+                            </div>
+                        </CustomAnchor>
                     </div>)
             } />
         </>

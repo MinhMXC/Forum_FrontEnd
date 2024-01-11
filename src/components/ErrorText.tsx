@@ -10,6 +10,7 @@ export default function ErrorText(props: {
     const marginBottom = props.marginBottom === undefined ? 1 : props.marginBottom
     return (
         <p
+            className="error-text"
             style={{
                 whiteSpace: "pre-line",
                 marginTop: `${marginTop}%`,

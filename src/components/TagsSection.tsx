@@ -12,7 +12,7 @@ export default function TagsSection(props: {
     return (
         <Grid container spacing={1} sx={props.sx}>
             {props.tags.map(tag =>
-                <Grid item xs="auto">
+                <Grid item xs="auto" key={tag.id}>
                     <a href={APP_CONSTANTS.FRONTEND_URL + `?title=&body=&tags=${tag.tag_text}`}>
                         <Chip
                             variant="filled"
