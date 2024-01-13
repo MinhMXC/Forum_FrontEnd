@@ -23,8 +23,10 @@ function App() {
         {
             element: (
                 <>
-                    <Header/>
-                    <Outlet/>
+                    <Header />
+                    <div id="main-wrapper">
+                        <Outlet />
+                    </div>
                 </>
             ),
             errorElement: <ErrorSection errorParams="Something has gone terribly wrong" />,
@@ -69,9 +71,7 @@ function App() {
     ])
 
     return (
-        <div id="main-wrapper">
-            <RouterProvider router={router}/>
-        </div>
+        <RouterProvider router={router}/>
     );
 }
 

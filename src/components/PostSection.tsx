@@ -1,4 +1,5 @@
 import {
+    Backdrop,
     Grid,
     IconButton, Menu, MenuItem,
     Typography
@@ -8,13 +9,14 @@ import {CommentOutlined, MoreHoriz} from "@mui/icons-material";
 import Post from "../interfaces/Post";
 import parseString from "../helper/parseString";
 import {useState} from "react";
-import {NavigateFunction} from "react-router-dom";
+import {NavigateFunction, useLocation} from "react-router-dom";
 import fetchWithHeader from "../helper/fetchWithHeader";
 import APP_CONSTANTS from "../helper/ApplicationConstants";
 import UserAvatar from "./UserAvatar";
 import TagsSection from "./TagsSection";
 import LikeDislikeSection from "./LikeDislikeSection";
 import CustomAnchor from "./CustomAnchor";
+import Warning from "./Warning";
 
 const secondaryTextColour= "#8a8a8a"
 
@@ -51,18 +53,16 @@ function PostImage(props: {
     let style: any = {
         maxWidth: "100%",
         maxHeight: window.screen.height * 2 / 3,
-        zIndex: 999,
     }
     if (isMaxWidth) {
         style = {
             width: "100%",
             height: "100%",
-            zIndex: 999,
         }
     }
 
     return (
-        <div className="post-image-container">
+        <div className="post-image-container" style={{ display: post.image ? "flex" : "none" }}>
             <img
                 src={parseString(post.image)}
                 alt={`post-${post.id}-img`}
@@ -106,12 +106,26 @@ function OwnerOptions(props: {
 
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const open = Boolean(anchorEl)
+
+    const location = useLocation()
+    const [backdropOpen, setBackdropOpen] = useState<boolean>(false)
+    const disclaimer = `This will only delete the post itself, not including the comments to it.`
+
     const handleClick = (event: any) => {
         setAnchorEl(event.currentTarget)
     }
 
     const handleClose = () => {
         setAnchorEl(null)
+    }
+
+    function deleteButtonOnClick() {
+        if (!/\/posts\/\d+/.test(location.pathname)) {
+            navigate(`/posts/${post.id}`)
+            return
+        }
+        setAnchorEl(null)
+        setBackdropOpen(true)
     }
 
     async function deletePost() {
@@ -124,15 +138,20 @@ function OwnerOptions(props: {
     }
 
     return (
-        <Grid item xs="auto" sx={{ ml: 1 }}>
-            <IconButton onClick={handleClick} sx={{ padding: 0.5 }} color="inherit">
-                <MoreHoriz />
-            </IconButton>
-            <Menu elevation={2} anchorEl={anchorEl} open={open} onClose={handleClose}>
-                <MenuItem onClick={updatePost}>Edit</MenuItem>
-                <MenuItem onClick={deletePost}>Delete</MenuItem>
-            </Menu>
-        </Grid>
+        <>
+            <Grid item xs="auto" sx={{ ml: 1 }}>
+                <IconButton onClick={handleClick} sx={{ padding: 0.5 }} color="inherit">
+                    <MoreHoriz />
+                </IconButton>
+                <Menu elevation={2} anchorEl={anchorEl} open={open} onClose={handleClose}>
+                    <MenuItem onClick={updatePost}>Edit</MenuItem>
+                    <MenuItem onClick={deleteButtonOnClick}>Delete</MenuItem>
+                </Menu>
+            </Grid>
+            <Backdrop open={backdropOpen} onClick={() => setBackdropOpen(false)} sx={{ zIndex: 999 }}>
+                <Warning disclaimer={disclaimer} onClick={deletePost}/>
+            </Backdrop>
+        </>
     );
 }
 

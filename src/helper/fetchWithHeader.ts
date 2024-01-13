@@ -1,5 +1,6 @@
 import Cookies from "js-cookie";
 import APP_CONSTANTS from "./ApplicationConstants";
+import {saveToken} from "./tokenFunctions";
 
 const access_token = "access-token"
 const token_type = "token-type"
@@ -21,6 +22,10 @@ async function fetchWithHeader(url: string, method: string, data: (JSON | undefi
             },
             body: data === undefined ? undefined : JSON.stringify(data)
         })
+
+        if (response.headers.get(access_token)) {
+            saveToken(response)
+        }
 
         return await response.json()
     } catch (error) {

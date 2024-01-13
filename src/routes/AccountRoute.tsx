@@ -9,6 +9,7 @@ import ErrorText from "../components/ErrorText";
 import parseError from "../helper/parseError";
 import UserAvatar from "../components/UserAvatar";
 import getTextFieldValue from "../helper/getTextFieldValue";
+import Warning from "../components/Warning";
 
 function ChangeButton(props: {
     onClick: any,
@@ -163,6 +164,8 @@ function DeleteAccount(props: {
     const user_id = props.user_id
     const navigate = props.navigate
     const [open, setOpen] = useState<boolean>(false)
+    const disclaimer = `This will not delete your posts or comments.
+    However, the user for those will appear as [deleted].`
 
     async function buttonOnClick() {
         await fetchWithHeader(`/users/${user_id}`, "DELETE")
@@ -181,23 +184,7 @@ function DeleteAccount(props: {
             >Delete Account</Button>
 
             <Backdrop open={open} onClick={() => setOpen(false)} sx={{ zIndex: 999 }}>
-                <div className="section-container">
-                    <p className="section-title-text">Warning</p>
-                    <p id="warning-body-paragraph">
-                        This will PERMANENTLY delete your account with no ways to recover.<br />
-                        Are you sure you want to do this?
-                    </p>
-                    <p style={{ marginTop: "2%" }}>
-                        *This will not delete your posts or comments
-                    </p>
-                    <Button
-                        variant="contained"
-                        color="error"
-                        disableElevation
-                        onClick={buttonOnClick}
-                        sx={{ mt: "2%" }}
-                    >Proceed</Button>
-                </div>
+                <Warning disclaimer={disclaimer} onClick={buttonOnClick}/>
             </Backdrop>
         </div>
     )

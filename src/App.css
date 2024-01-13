@@ -6,12 +6,15 @@ input[type="search"]::-webkit-search-cancel-button {
     -webkit-appearance: none;
 }
 
-h1, h2, h3, h4, h5, h6, p {
-    margin: 0;
+h1, h2, h3, h4, h5, h6, p, ol, ul, blockquote {
+    margin-top: 0;
+    margin-bottom: 0;
 }
 
 header {
+    position: fixed;
     background-color: white;
+    z-index: 899;
     width: 100%;
 }
 
@@ -20,6 +23,7 @@ header {
     flex-direction: column;
     align-items: center;
     max-width: 100%;
+    margin-top: 60px;
 }
 
 #site-name {
@@ -102,6 +106,10 @@ header {
 }
 
 /*Header*/
+
+header {
+    margin-top: -60px;
+}
 
 #header-username {
     display: inline;
@@ -200,6 +208,25 @@ header {
 #guideline-body {
     margin-top: 0.5%;
     font-size: 130%;
+}
+
+/*Warning*/
+
+#warning-container {
+    width: 450px;
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    color: black;
+    z-index: 999;
+}
+
+#warning-button-div {
+    margin-top: 10px;
+    display: flex;
+    width: 100%;
+    gap: 20px;
+    justify-content: center;
 }
 
 /*Small Screen Styles*/

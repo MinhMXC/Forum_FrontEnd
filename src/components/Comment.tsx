@@ -1,7 +1,7 @@
 import {
     Accordion,
     AccordionDetails,
-    AccordionSummary,
+    AccordionSummary, Backdrop,
     Button, createTheme,
     Grid,
     IconButton, Menu, MenuItem,
@@ -21,6 +21,7 @@ import UserAvatar from "./UserAvatar";
 import LikeDislikeSection from "./LikeDislikeSection";
 import TextEditor from "./TextEditor";
 import CustomAnchor from "./CustomAnchor";
+import Warning from "./Warning";
 
 const secondaryTextColour= "#8a8a8a"
 
@@ -83,13 +84,18 @@ function UsernameDate(props: {
 function OwnerOptions(props: {
     comment: Comment,
     navigate: NavigateFunction,
-    setPatch: Function
+    isPatching: boolean,
+    setPatch: Function,
 }) {
     const comment = props.comment
     const navigate = props.navigate
 
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl)
+
+    const [backdropOpen, setBackdropOpen] = useState<boolean>(false)
+    const disclaimer = `This will only delete the comment itself, not including the comments to it.`
+
     const handleClick = (event: any) => {
         setAnchorEl(event.currentTarget)
     }
@@ -98,32 +104,43 @@ function OwnerOptions(props: {
         setAnchorEl(null)
     }
 
+    function deleteButtonOnClick() {
+        setAnchorEl(null)
+        setBackdropOpen(true)
+    }
+
     async function deleteComment() {
         await fetchWithHeader(`/comments/${comment.id}`, "DELETE")
         navigate(0)
     }
 
     function updateComment() {
-        props.setPatch(true)
+        props.setPatch(!props.isPatching)
         setAnchorEl(null)
     }
 
     return (
-        <Grid item xs="auto">
-            <IconButton onClick={handleClick} sx={{ padding: 0.5 }} color="inherit">
-                <MoreHoriz />
-            </IconButton>
-            <Menu elevation={2} anchorEl={anchorEl} open={open} onClose={handleClose}>
-                <MenuItem onClick={updateComment}>Edit</MenuItem>
-                <MenuItem onClick={deleteComment}>Delete</MenuItem>
-            </Menu>
-        </Grid>
+        <>
+            <Grid item xs="auto">
+                <IconButton onClick={handleClick} sx={{ padding: 0.5 }} color="inherit">
+                    <MoreHoriz />
+                </IconButton>
+                <Menu elevation={2} anchorEl={anchorEl} open={open} onClose={handleClose}>
+                    <MenuItem onClick={updateComment}>Edit</MenuItem>
+                    <MenuItem onClick={deleteButtonOnClick}>Delete</MenuItem>
+                </Menu>
+            </Grid>
+            <Backdrop open={backdropOpen} onClick={() => setBackdropOpen(false)} sx={{ zIndex: 999 }}>
+                <Warning disclaimer={disclaimer} onClick={deleteComment}/>
+            </Backdrop>
+        </>
     );
 }
 
 function CommentBottomControls(props: {
     comment: Comment,
     navigate: NavigateFunction,
+    isPatching: boolean,
     setPatch: Function,
     replyOnClick: any
 }) {
@@ -143,7 +160,16 @@ function CommentBottomControls(props: {
                     <Typography variant="body2">Reply</Typography>
                 </Button>
             </Grid>
-            {comment.owner ? <OwnerOptions comment={comment} navigate={navigate} setPatch={props.setPatch} /> : undefined}
+            {
+                comment.owner
+                ? <OwnerOptions
+                        comment={comment}
+                        navigate={navigate}
+                        isPatching={props.isPatching}
+                        setPatch={props.setPatch}
+                    />
+                : undefined
+            }
         </Grid>
     );
 }
@@ -218,6 +244,7 @@ export default function CommentE(props: {
                                 comment={comment}
                                 replyOnClick={replyOnClick}
                                 navigate={navigate}
+                                isPatching={isPatching}
                                 setPatch={setIsPatching}
                             />
                             {
