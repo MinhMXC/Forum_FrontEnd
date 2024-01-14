@@ -39,26 +39,32 @@ services:
       - postgres:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: 123456abc
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
-  backend: 
+  backend:
     build: ./Forum_BackEnd
-    volumes: 
-      - ./ForumAPI2:/usr/src/app
+    volumes:
+      - ./Forum_Backend:/usr/src/app
     ports:
-      - 5000:3000
+      - 5000:5000
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   frontend:
     build: ./Forum_FrontEnd
-    volumes: 
-      - ./forumfrontend:/usr/src/app
+    volumes:
+      - ./Forum_FrontEnd:/usr/src/app
     ports:
       - 3000:3000
     depends_on:
       - backend
 
-volumes: 
+volumes:
   postgres:
 ```
 5. Using the terminal, CD into the folder and run ```docker compose up```.
