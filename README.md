@@ -10,6 +10,8 @@ This is built using React Typescript and Material UI, with React Router v6.
 
 ## How to setup
 
+### Things to note
+
 Because the app is supposed to be run in conjunction with the [Backend](https://github.com/MinhMXC/Forum_BackEnd),
 running it alone will not load any data and raise errors.
 
@@ -70,3 +72,4 @@ volumes:
 5. Using the terminal, CD into the folder and run ```docker compose up```.
 6. Wait a while for all the images to be built and run.
 7. If there is no errors, the website will be hosted at localhost:3000 and can the Backend is exposed at localhost:5000.
+8. The **default user** is ```username: minhmxc``` and ```password: 123456```
